@@ -3,7 +3,7 @@ import { Action, ReversibleAction, IrreversibleAction } from '@visualstorytellin
 import { IObservableList } from '@jupyterlab/observables';
 import { ICellModel, Cell } from '@jupyterlab/cells';
 import { NotebookProvenance } from './notebook-provenance';
-import { toArray } from '@phosphor/algorithm';
+import { toArray } from '@lumino/algorithm';
 
 /**
  * A notebook widget extension that adds a button to the toolbar.
@@ -23,7 +23,7 @@ export class NotebookProvenanceTracker {
     // this.notebookProvenance.notebook.activeCellChanged.connect(() => {
     //   console.log(['activeCellChanged', arguments]);
     // });
-    this.notebookProvenance.notebook.model.cells.changed.connect(this._onCellsChanged, this);
+    this.notebookProvenance.notebook.model!.cells.changed.connect(this._onCellsChanged, this);
 
     this.trackCellExecution();
 
@@ -47,7 +47,7 @@ export class NotebookProvenanceTracker {
       const activeCell = notebook.activeCell;
       if (typeof prevActiveCellValue !== 'undefined') {
         // Check if cell has changed
-        const cell = notebook.model.cells.get(prevActiveCellIndex);
+        const cell = notebook.model!.cells.get(prevActiveCellIndex);
         if (cell && prevActiveCellValue !== cell.value.text) {
           // if so add to prov
           const cellChangedAction = {

@@ -3,7 +3,8 @@ import { JupyterLab } from '@jupyterlab/application';
 import { Notebook } from '@jupyterlab/notebook';
 import { ActionFunctions } from './action-functions';
 import { NotebookProvenanceTracker } from './provenance-tracker';
-import { IClientSession } from '@jupyterlab/apputils';
+import { ISessionContext } from '@jupyterlab/apputils';
+import { sessionContextDialogs } from '@jupyterlab/apputils';
 
 /**
  * Model for a provenance graph.
@@ -17,27 +18,27 @@ export class NotebookProvenance {
     private _tracker: IProvenanceTracker;
     private _nbtracker: NotebookProvenanceTracker;
 
-    constructor(private app: JupyterLab, public readonly notebook: Notebook, private session: IClientSession) {
+    constructor(private app: JupyterLab, public readonly notebook: Notebook, private sessionContext: ISessionContext) {
         this.init();
     }
 
     private init() {
-        if (this.notebook.model.metadata.has('provenance')) {
-            const serGraph = this.notebook.model.metadata.get('provenance');
+        if (this.notebook.model!.metadata.has('provenance')) {
+            const serGraph = this.notebook.model!.metadata.get('provenance');
             if (serGraph) {
                 this._graph = restoreProvenanceGraph(serGraph as SerializedProvenanceGraph);
             } else {
-                this._graph = new ProvenanceGraph({ name: 'nbprovenance.default.graph', version: this.app.info.version });
+                this._graph = new ProvenanceGraph({ name: 'nbprovenance.default.graph', version: this.app.version });
             }
         } else {
-            this._graph = new ProvenanceGraph({ name: 'nbprovenance.default.graph', version: this.app.info.version });
+            this._graph = new ProvenanceGraph({ name: 'nbprovenance.default.graph', version: this.app.version });
         }
-        this.session.ready.then(() => {
+        this.sessionContext.ready.then(() => {
             this._graph.on('nodeAdded', (node: ProvenanceNode) => this.onNodeAdded(node));
         });
 
         this._registry = new ActionFunctionRegistry();
-        this._actionFunctions = new ActionFunctions(this.notebook, this.session);
+        this._actionFunctions = new ActionFunctions(this.notebook, this.sessionContext);
         // get method names from the object (see https://stackoverflow.com/a/48051971)
         let actionFunctionNames = Object.getPrototypeOf(this._actionFunctions);
         Object.getOwnPropertyNames(actionFunctionNames)
@@ -53,11 +54,13 @@ export class NotebookProvenance {
         this._traverser.on('invalidTraversal', async (node) => {
             const restart = window.confirm('Can only traverse to node by restarting kernel, clearing notebook and re-executing provenance graph');
             if (restart) {
-                await this.session.restart();
+                // await this.sessionContext.restart();
+                // await this.sessionContext.session!.kernel!.restart();
+                await sessionContextDialogs.restart(this.sessionContext); // TODO: check if this solution works as expected
                 // pause tracker, as clearing notebook adds node to graph
                 this._tracker.acceptActions = false;
-                this.notebook.model.cells.clear();
-                this.notebook.model.cells.insert(0, this.notebook.model.contentFactory.createCodeCell({}));
+                this.notebook.model!.cells.clear();
+                this.notebook.model!.cells.insert(0, this.notebook.model!.contentFactory.createCodeCell({}));
                 this._tracker.acceptActions = true;
                 // unpause tracker b
                 this._graph.current = this._graph.root;
@@ -68,7 +71,7 @@ export class NotebookProvenance {
     }
 
     protected onNodeAdded(node: ProvenanceNode) {
-        this.notebook.model.metadata.set('provenance', serializeProvenanceGraph(this._graph as ProvenanceGraph));
+        this.notebook.model!.metadata.set('provenance', serializeProvenanceGraph(this._graph as ProvenanceGraph));
         // console.log('node added to graph', node);
     }
 

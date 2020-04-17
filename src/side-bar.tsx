@@ -4,11 +4,11 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { NotebookProvenance } from './notebook-provenance';
 import { ProvenanceTreeVisualizationReact } from '@visualstorytelling/provenance-tree-visualization-react';
-import { ApplicationShell } from '@jupyterlab/application';
+import { LabShell } from '@jupyterlab/application';
 import { NotebookPanel, Notebook, INotebookTracker } from '@jupyterlab/notebook';
 import { notebookModelCache } from '.';
-import { Widget } from '@phosphor/widgets';
-import { Message } from '@phosphor/messaging';
+import { Widget } from '@lumino/widgets';
+import { Message } from '@lumino/messaging';
 import './action-listener';
 import { ProvenanceGraphTraverser } from '@visualstorytelling/provenance-core';
 
@@ -22,14 +22,14 @@ export class SideBar extends Widget {
 
     private notebookProvenance: NotebookProvenance | null = null;
 
-    constructor(shell: ApplicationShell, nbTracker: INotebookTracker) {
+    constructor(shell: LabShell, nbTracker: INotebookTracker) {
         super();
 
         this.addClass('jp-nbprovenance-view');
 
         nbTracker.widgetAdded.connect((_: INotebookTracker, nbPanel: NotebookPanel) => {
             // wait until the session with the notebook model is ready
-            nbPanel.session.ready.then(() => {
+            nbPanel.sessionContext.ready.then(() => {
                 // update provenance information only for the current widget
                 if (shell.currentWidget instanceof NotebookPanel && nbPanel === shell.currentWidget) {
                     const notebook: Notebook = nbPanel.content;
@@ -39,7 +39,7 @@ export class SideBar extends Widget {
             });
         });
 
-        shell.currentChanged.connect((shell: ApplicationShell) => {
+        shell.currentChanged.connect((shell: LabShell) => {
             const currentWidget = shell.currentWidget;
             if (currentWidget === null || (currentWidget instanceof NotebookPanel) === false) {
                 this.notebookProvenance = null;

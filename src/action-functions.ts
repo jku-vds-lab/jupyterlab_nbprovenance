@@ -1,7 +1,7 @@
-import { nbformat } from '@jupyterlab/coreutils';
+import { ICell, CellType, IOutput } from '@jupyterlab/nbformat';
 import { ICellModel, CodeCellModel, MarkdownCell, CodeCell } from '@jupyterlab/cells';
 import { NotebookActions, Notebook } from '@jupyterlab/notebook';
-import { IClientSession } from '@jupyterlab/apputils';
+import { ISessionContext } from '@jupyterlab/apputils';
 
 /**
  * Define available action functions that are calling the NotebookActions
@@ -14,13 +14,13 @@ import { IClientSession } from '@jupyterlab/apputils';
 export class ActionFunctions {
     public pauseTracking: boolean = false;
 
-    constructor(private notebook: Notebook, private session: IClientSession) { }
+    constructor(private notebook: Notebook, private session: ISessionContext) { }
 
-    public async addCell(index: number, cell: nbformat.ICell) {
+    public async addCell(index: number, cell: ICell ) {
         console.log('added cell at index', index, cell);
 
         // code from NotebookModel.fromJSON() --> @jupyterlab/notebook/src/model.ts
-        const factory = this.notebook.model.contentFactory;
+        const factory = this.notebook.model!.contentFactory; // !. for suppressing the "Object is possibly 'null'" error
         let cellModel: ICellModel;
 
         switch (cell.cell_type) {
@@ -39,7 +39,7 @@ export class ActionFunctions {
         }
 
         this.pauseTracking = true;
-        this.notebook.model.cells.insert(index, cellModel);
+        this.notebook.model!.cells.insert(index, cellModel);
         this.pauseTracking = false;
 
         return null;
@@ -48,7 +48,7 @@ export class ActionFunctions {
     public async removeCell(index: number) {
         console.log('removed cell at index', index);
         this.pauseTracking = true;
-        this.notebook.model.cells.remove(index);
+        this.notebook.model!.cells.remove(index);
         this.pauseTracking = false;
         return null;
     }
@@ -57,17 +57,17 @@ export class ActionFunctions {
         console.log('moved cell to index', fromIndex, toIndex);
 
         this.pauseTracking = true;
-        this.notebook.model.cells.move(fromIndex, toIndex);
+        this.notebook.model!.cells.move(fromIndex, toIndex);
         this.pauseTracking = false;
 
         return null;
     }
 
-    public async setCell(index: number, cell: nbformat.ICell) {
+    public async setCell(index: number, cell: ICell) {
         console.log('set cell at index', index, cell);
 
         this.pauseTracking = true;
-        NotebookActions.changeCellType(this.notebook, cell.cell_type as nbformat.CellType);
+        NotebookActions.changeCellType(this.notebook, cell.cell_type as CellType);
         this.pauseTracking = false;
 
         return null;
@@ -84,7 +84,7 @@ export class ActionFunctions {
     }
 
     public async cellValue(index: number, value: string) {
-        const cell = this.notebook.model.cells.get(index);
+        const cell = this.notebook.model!.cells.get(index);
         if (cell) {
             cell.value.text = value;
         }
@@ -97,9 +97,9 @@ export class ActionFunctions {
         }
     }
 
-    public async cellOutputs(index: number, outputs: nbformat.IOutput[]) {
+    public async cellOutputs(index: number, outputs: IOutput[]) {
         const cell = this.notebook.widgets[index];
-        const cellModel = this.notebook.model.cells.get(index);
+        const cellModel = this.notebook.model!.cells.get(index);
         if (cellModel) {
             switch (cellModel.type) {
                 case 'markdown':
@@ -116,7 +116,7 @@ export class ActionFunctions {
 
     public async clearOutputs(index: number) {
         const cell = this.notebook.widgets[index];
-        const cellModel = this.notebook.model.cells.get(index);
+        const cellModel = this.notebook.model!.cells.get(index);
         if (cellModel) {
             switch (cellModel.type) {
                 case 'markdown':
