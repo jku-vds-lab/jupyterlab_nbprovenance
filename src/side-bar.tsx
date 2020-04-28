@@ -13,7 +13,7 @@ import './action-listener';
 import { ProvenanceGraphTraverser } from '@visualstorytelling/provenance-core';
 
 import '../style/side-bar.css';
-import { SlideDeck } from './slide-deck';
+// import { SlideDeck } from './slide-deck';
 
 /**
  * The main view for the notebook provenance.
@@ -92,10 +92,10 @@ class ProvenanceGraphTreeComponent extends React.Component<IProps, IState> {
                 <div>
                     <span>Provenance of `{(this.props.notebookProvenance.notebook.parent! as NotebookPanel).context.path}`</span>
                     <ProvenanceTreeVisualizationReact traverser={this.props.notebookProvenance.traverser as ProvenanceGraphTraverser} />
-                    <SlideDeck traverser={this.props.notebookProvenance.traverser as ProvenanceGraphTraverser} />
                 </div>
             );
         }
+        //<SlideDeck traverser={this.props.notebookProvenance.traverser as ProvenanceGraphTraverser} />
         return <div className='jp-nbprovenance-nograph'>No provenance available for the current tab.</div>;
     }
 }
