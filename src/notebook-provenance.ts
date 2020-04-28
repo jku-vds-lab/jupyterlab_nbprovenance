@@ -26,7 +26,7 @@ export class NotebookProvenance {
         if (this.notebook.model!.metadata.has('provenance')) {
             const serGraph = this.notebook.model!.metadata.get('provenance');
             if (serGraph) {
-                this._graph = restoreProvenanceGraph(serGraph as SerializedProvenanceGraph);
+                this._graph = restoreProvenanceGraph(serGraph as unknown as SerializedProvenanceGraph);
             } else {
                 this._graph = new ProvenanceGraph({ name: 'nbprovenance.default.graph', version: this.app.version });
             }
@@ -71,6 +71,7 @@ export class NotebookProvenance {
     }
 
     protected onNodeAdded(node: ProvenanceNode) {
+        // @ts-ignore
         this.notebook.model!.metadata.set('provenance', serializeProvenanceGraph(this._graph as ProvenanceGraph));
         // console.log('node added to graph', node);
     }
