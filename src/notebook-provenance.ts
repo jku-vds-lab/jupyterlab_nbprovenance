@@ -1,4 +1,17 @@
-import { ProvenanceGraph, ProvenanceNode, ProvenanceGraphTraverser, IProvenanceGraphTraverser, IProvenanceGraph, ActionFunctionRegistry, IActionFunctionRegistry, IProvenanceTracker, ProvenanceTracker, serializeProvenanceGraph, restoreProvenanceGraph, SerializedProvenanceGraph } from '@visualstorytelling/provenance-core';
+import {
+    ProvenanceGraph, // class
+    ProvenanceNode, // type
+    ProvenanceGraphTraverser, // class
+    IProvenanceGraphTraverser, // interface
+    IProvenanceGraph, // interface
+    ActionFunctionRegistry, // class
+    IActionFunctionRegistry, // interface
+    IProvenanceTracker, // interface
+    ProvenanceTracker, // class
+    serializeProvenanceGraph, // function
+    // restoreProvenanceGraph, // function
+    // SerializedProvenanceGraph // type
+} from '@visualstorytelling/provenance-core';
 import { JupyterLab } from '@jupyterlab/application';
 import { Notebook } from '@jupyterlab/notebook';
 import { ActionFunctions } from './action-functions';
@@ -6,11 +19,31 @@ import { NotebookProvenanceTracker } from './provenance-tracker';
 import { ISessionContext } from '@jupyterlab/apputils';
 import { sessionContextDialogs } from '@jupyterlab/apputils';
 
+// import {ProvenanceGraph} from '@visdesignlab/provenance-lib-core';
+
+// import{
+//       initProvenance,
+//       ProvenanceGraph,
+//       Provenance,
+//       ActionFunction,
+//       SubscriberFunction,
+//       NodeMetadata,
+//       NodeID,
+//       Diff,
+//       RootNode,
+//       StateNode,
+//       ProvenanceNode,
+//       isStateNode,
+//       Nodes,
+//       CurrentNode,
+//       Artifacts,
+//       Extra
+// } from '@visdesignlab/provenance-lib-core';
+
 /**
  * Model for a provenance graph.
  */
 export class NotebookProvenance {
-
     private _traverser: IProvenanceGraphTraverser;
     private _registry: IActionFunctionRegistry;
     private _graph: IProvenanceGraph;
@@ -23,16 +56,18 @@ export class NotebookProvenance {
     }
 
     private init() {
-        if (this.notebook.model!.metadata.has('provenance')) {
-            const serGraph = this.notebook.model!.metadata.get('provenance');
-            if (serGraph) {
-                this._graph = restoreProvenanceGraph(serGraph as unknown as SerializedProvenanceGraph);
-            } else {
-                this._graph = new ProvenanceGraph({ name: 'nbprovenance.default.graph', version: this.app.version });
-            }
-        } else {
+        // tslint:disable-next-line:no-debugger
+        debugger
+        // if (this.notebook.model!.metadata.has('provenance')) {
+        //     const serGraph = this.notebook.model!.metadata.get('provenance');
+        //     if (serGraph) {
+        //         this._graph = restoreProvenanceGraph(serGraph as unknown as SerializedProvenanceGraph);
+        //     } else {
+        //         this._graph = new ProvenanceGraph({ name: 'nbprovenance.default.graph', version: this.app.version });
+        //     }
+        // } else {
             this._graph = new ProvenanceGraph({ name: 'nbprovenance.default.graph', version: this.app.version });
-        }
+        // }
         this.sessionContext.ready.then(() => {
             this._graph.on('nodeAdded', (node: ProvenanceNode) => this.onNodeAdded(node));
         });
