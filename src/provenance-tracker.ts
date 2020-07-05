@@ -171,7 +171,7 @@ export class NotebookProvenanceTracker {
         return;
     }
 
-    Promise.resolve(this.notebookProvenance.tracker.applyAction(action!, true));
+    Promise.resolve(this.notebookProvenance.tracker.applyAction(action!, true)); // adds this action to the graph
     console.groupEnd();
   }
 

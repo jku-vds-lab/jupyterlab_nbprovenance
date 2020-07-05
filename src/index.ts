@@ -38,5 +38,5 @@ function activate(app: JupyterLab, restorer: ILayoutRestorer, nbTracker: INotebo
 
   // Rank has been chosen somewhat arbitrarily
   // app.shell.addToLeftArea(provenanceView, { rank: 700 }); // this has been reworked
-  app.shell.add(provenanceView, 'left', { rank: 700 });
+  app.shell.add(provenanceView, 'right', { rank: 700 });
 }
