@@ -2,7 +2,7 @@ import { JupyterLab, JupyterFrontEndPlugin, ILayoutRestorer } from '@jupyterlab/
 import '../style/index.css';
 import { NotebookPanel, Notebook, INotebookTracker } from '@jupyterlab/notebook';
 import { SideBar } from './side-bar';
-import { NotebookProvenance } from './notebook-provenance';
+import { NotebookProvenance } from './notebook-provenance-visdesignlab';
 
 /**
  * Initialization data for the jupyterlab_nbprovenance extension.
@@ -29,14 +29,16 @@ function activate(app: JupyterLab, restorer: ILayoutRestorer, nbTracker: INotebo
     });
   });
 
-  const provenanceView = new SideBar(app.shell, nbTracker);
+  const provenanceView = new SideBar(app.shell);
   provenanceView.id = 'nbprovenance-view';
   provenanceView.title.caption = 'Notebook Provenance';
   provenanceView.title.iconClass = 'jp-nbprovenanceIcon';
 
+  // @ts-ignore
   restorer.add(provenanceView, 'nbprovenance_view');
 
   // Rank has been chosen somewhat arbitrarily
   // app.shell.addToLeftArea(provenanceView, { rank: 700 }); // this has been reworked
-  app.shell.add(provenanceView, 'right', { rank: 700 });
+  // @ts-ignore
+  app.shell.add(provenanceView, 'right', {rank: 700});
 }
