@@ -40,6 +40,46 @@ import { sessionContextDialogs } from '@jupyterlab/apputils';
 //       Extra
 // } from '@visdesignlab/provenance-lib-core';
 
+
+
+import {NotebookProvenanceTracker} from './provenance-tracker'
+import {initProvenance} from "@visdesignlab/provenance-lib-core";
+
+
+
+
+/**
+ * interface representing the state of the application
+ */
+export interface NodeState {
+    selectedQuartet:string;
+    selectedNode:string;
+    hoveredNode:string;
+};
+
+export interface NodeExtra {
+    nodeNum: number;
+    nodeX: number;
+    nodeY: number;
+};
+
+/**
+ * Initial state
+ */
+
+const initialState: NodeState = {
+    selectedQuartet: 'I',
+    selectedNode: 'none',
+    hoveredNode: 'none'
+}
+
+type EventTypes = "Change Quartet" | "Select Node" | "Hover Node"
+
+
+//initialize provenance with the first state
+let prov = initProvenance<NodeState, EventTypes, NodeExtra>(initialState, false);
+
+
 /**
  * Model for a provenance graph.
  */
@@ -49,7 +89,7 @@ export class NotebookProvenance {
     private _graph: IProvenanceGraph;
     private _actionFunctions: ActionFunctions;
     private _tracker: IProvenanceTracker;
-    // private _nbtracker: NotebookProvenanceTracker;
+    private _nbtracker: NotebookProvenanceTracker;
 
     constructor(private app: JupyterLab, public readonly notebook: Notebook, private sessionContext: ISessionContext) {
         this.init();
@@ -81,26 +121,26 @@ export class NotebookProvenance {
                 this._registry.register(name, (this._actionFunctions as any)[name], this._actionFunctions);
             });
 
-        this._tracker = new ProvenanceTracker(this._registry, this._graph);
-        this._traverser = new ProvenanceGraphTraverser(this._registry, this._graph, this._tracker);
-        this._traverser.trackingWhenTraversing = false;
-        this._traverser.on('invalidTraversal', async (node) => {
-            const restart = window.confirm('Can only traverse to node by restarting kernel, clearing notebook and re-executing provenance graph');
-            if (restart) {
-                // await this.sessionContext.restart();
-                // await this.sessionContext.session!.kernel!.restart();
-                await sessionContextDialogs.restart(this.sessionContext); // TODO: check if this solution works as expected
-                // pause tracker, as clearing notebook adds node to graph
-                this._tracker.acceptActions = false;
-                this.notebook.model!.cells.clear();
-                this.notebook.model!.cells.insert(0, this.notebook.model!.contentFactory.createCodeCell({}));
-                this._tracker.acceptActions = true;
-                // unpause tracker b
-                this._graph.current = this._graph.root;
-                this._traverser.toStateNode(node.id);
-            }
-        });
-        // this._nbtracker = new NotebookProvenanceTracker(this);
+        // this._tracker = new ProvenanceTracker(this._registry, this._graph);
+        // this._traverser = new ProvenanceGraphTraverser(this._registry, this._graph, this._tracker);
+        // this._traverser.trackingWhenTraversing = false;
+        // this._traverser.on('invalidTraversal', async (node) => {
+        //     const restart = window.confirm('Can only traverse to node by restarting kernel, clearing notebook and re-executing provenance graph');
+        //     if (restart) {
+        //         // await this.sessionContext.restart();
+        //         // await this.sessionContext.session!.kernel!.restart();
+        //         await sessionContextDialogs.restart(this.sessionContext); // TODO: check if this solution works as expected
+        //         // pause tracker, as clearing notebook adds node to graph
+        //         this._tracker.acceptActions = false;
+        //         this.notebook.model!.cells.clear();
+        //         this.notebook.model!.cells.insert(0, this.notebook.model!.contentFactory.createCodeCell({}));
+        //         this._tracker.acceptActions = true;
+        //         // unpause tracker b
+        //         this._graph.current = this._graph.root;
+        //         this._traverser.toStateNode(node.id);
+        //     }
+        // });
+        this._nbtracker = new NotebookProvenanceTracker(this);
     }
 
     protected onNodeAdded(node: ProvenanceNode) {

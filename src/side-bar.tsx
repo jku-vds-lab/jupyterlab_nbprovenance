@@ -41,13 +41,13 @@ import
 // import ReactDOM from 'react-dom'
 // import * as d3 from "d3"
 
-import {
-    ProvVis,
-    EventConfig,
-    Config,
-    ProvVisConfig,
-    ProvVisCreator
-} from "@visdesignlab/provvis";
+// import {
+//     ProvVis,
+//     EventConfig,
+//     Config,
+//     ProvVisConfig,
+//     ProvVisCreator
+// } from "@visdesignlab/provvis";
 
 
 // import {
@@ -56,7 +56,7 @@ import {
 //     Config,
 //     ProvVisConfig,
 //     ProvVisCreator
-// } from "./ProvVis/provvis";
+// } from "../ProvVis/provvis";
 
 
 
@@ -184,7 +184,7 @@ export class SideBar extends Widget {
      * Handle update requests for the widget.
      */
     async onUpdateRequest(msg: Message): Promise<void> {
-        this.summary.innerText = "qwert!";
+        this.summary.innerText = "nice1";
     }
 
     /**
@@ -199,11 +199,10 @@ export class SideBar extends Widget {
 
 
 function provVisUpdate() {
-    debugger
     document.getElementById("ProvDiv")!;
-    console.log("HEEEERE");
-    ProvVisCreator(
-      document.getElementById("ProvDiv")!,
-      prov,
-      visCallback);
+    console.log("UPDATING THE VISUALIZATION");
+    // ProvVisCreator(
+    //   document.getElementById("ProvDiv")!,
+    //   prov,
+    //   visCallback);
 }
