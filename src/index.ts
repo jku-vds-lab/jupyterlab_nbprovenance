@@ -2,7 +2,7 @@ import { JupyterLab, JupyterFrontEndPlugin, ILayoutRestorer } from '@jupyterlab/
 import '../style/index.css';
 import { NotebookPanel, Notebook, INotebookTracker } from '@jupyterlab/notebook';
 import { SideBar } from './side-bar';
-import { NotebookProvenance } from './notebook-provenance-visdesignlab';
+import { NotebookProvenance } from './notebook-provenance';
 
 /**
  * Initialization data for the jupyterlab_nbprovenance extension.

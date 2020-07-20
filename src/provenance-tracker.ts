@@ -2,7 +2,7 @@ import { Notebook, NotebookActions } from '@jupyterlab/notebook';
 import { Action, ReversibleAction, IrreversibleAction } from '@visualstorytelling/provenance-core';
 import { IObservableList } from '@jupyterlab/observables';
 import { ICellModel, Cell } from '@jupyterlab/cells';
-import { NotebookProvenance } from './notebook-provenance-visdesignlab';
+import {NodeState, NotebookProvenance} from './notebook-provenance';
 import { toArray } from '@lumino/algorithm';
 
 /**
@@ -14,7 +14,6 @@ export class NotebookProvenanceTracker {
    */
   constructor(private notebookProvenance: NotebookProvenance) {
 
-    console.log(("HERE!"));
     this.trackActiveCell();
 
     // this.notebookProvenance.notebook.model.contentChanged.connect(() => {
@@ -61,18 +60,47 @@ export class NotebookProvenanceTracker {
             undo: 'cellValue',
             undoArguments: [prevActiveCellIndex, prevActiveCellValue]
           };
-          // Promise.resolve(this.notebookProvenance.tracker.applyAction(cellChangedAction, true));
+          // Promise.resolve(this.notebookProvenance.tracker.applyAction(cellChangedAction, true)); //hier wird also zuerst die action changeValue ausgeführt, danach erst change active cell
+          let action = this.notebookProvenance.prov.addAction(
+            cell.value.text,
+            (state:NodeState) => {
+              state.activeCell = Number(cell.value.text);
+              return state;
+            }
+          )
+
+          console.log(action);
+
+          action
+            .addEventType("changeActiveCell")
+            .alwaysStoreState(true)
+            .applyAction();
         }
       }
 
-      const action = {
+      const legacy_action = {
         do: 'changeActiveCell',
         doArguments: [notebook.activeCellIndex],
         undo: 'changeActiveCell',
         undoArguments: [prevActiveCellIndex]
       };
+      console.log(legacy_action);
 
       // Promise.resolve(this.notebookProvenance.tracker.applyAction(action, true));
+      let action = this.notebookProvenance.prov.addAction(
+        String(notebook.activeCellIndex),
+        (state:NodeState) => {
+          state.activeCell = notebook.activeCellIndex;
+          return state;
+        }
+      )
+
+      console.log(action);
+
+      action
+        .addEventType("changeActiveCell")
+        .alwaysStoreState(true)
+        .applyAction();
 
       prevActiveCellIndex = notebook.activeCellIndex;
       if (activeCell) {

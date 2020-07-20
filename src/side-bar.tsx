@@ -184,7 +184,7 @@ export class SideBar extends Widget {
      * Handle update requests for the widget.
      */
     async onUpdateRequest(msg: Message): Promise<void> {
-        this.summary.innerText = "nice1";
+        this.summary.innerText = "Überschrift";
     }
 
     /**
