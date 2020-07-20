@@ -4,6 +4,7 @@ import { IObservableList } from '@jupyterlab/observables';
 import { ICellModel, Cell } from '@jupyterlab/cells';
 import {NodeState, NotebookProvenance} from './notebook-provenance';
 import { toArray } from '@lumino/algorithm';
+import { stringify } from 'circular-json';
 
 /**
  * A notebook widget extension that adds a button to the toolbar.
@@ -23,7 +24,7 @@ export class NotebookProvenanceTracker {
     // this.notebookProvenance.notebook.activeCellChanged.connect(() => {
     //   console.log(['activeCellChanged', arguments]);
     // });
-    this.notebookProvenance.notebook.model!.cells.changed.connect(this._onCellsChanged, this);
+    // this.notebookProvenance.notebook.model!.cells.changed.connect(this._onCellsChanged, this);
 
     this.trackCellExecution();
 
@@ -35,14 +36,12 @@ export class NotebookProvenanceTracker {
 
   trackActiveCell(): any {
     console.log("trackActiveCell");
-    debugger
     let prevActiveCellIndex = this.notebookProvenance.notebook.activeCellIndex;
     let prevActiveCellValue: string;
     if (this.notebookProvenance.notebook.activeCell) {
       prevActiveCellValue = this.notebookProvenance.notebook.activeCell.model.value.text;
     }
     const activeCellChangedListener = (notebook: Notebook) => {
-      debugger
       console.log("activeCellChanged");
       if (this.notebookProvenance.pauseTracking) {
         return;
@@ -87,20 +86,25 @@ export class NotebookProvenanceTracker {
       console.log(legacy_action);
 
       // Promise.resolve(this.notebookProvenance.tracker.applyAction(action, true));
+
       let action = this.notebookProvenance.prov.addAction(
-        String(notebook.activeCellIndex),
+        "changeActiveCell to " + String(notebook.activeCellIndex),
         (state:NodeState) => {
           state.activeCell = notebook.activeCellIndex;
           return state;
         }
-      )
+      );
 
+      debugger
       console.log(action);
 
       action
         .addEventType("changeActiveCell")
         .alwaysStoreState(true)
         .applyAction();
+
+
+
 
       prevActiveCellIndex = notebook.activeCellIndex;
       if (activeCell) {
@@ -124,89 +128,108 @@ export class NotebookProvenanceTracker {
       } else {
         throw new Error('Unable to find cell in notebook');
       }
-      let action: ReversibleAction;
-      let iaction: IrreversibleAction;
+      // let action: ReversibleAction;
+      // let iaction: IrreversibleAction;
+      //
+      // switch (obj.cell.model.type) {
+      //   case 'markdown':
+      //   case 'raw':
+      //     action = {
+      //       do: 'cellOutputs',
+      //       doArguments: [index, []],
+      //       undo: 'clearOutputs',
+      //       undoArguments: [index]
+      //     };
+      //     // Promise.resolve(this.notebookProvenance.tracker.applyAction(action, true));
+      //     break;
+      //   case 'code':
+      //     iaction = {
+      //       do: 'executeCell',
+      //       doArguments: [index],
+      //     };
+      //     // Promise.resolve(this.notebookProvenance.tracker.applyAction(iaction, true));
+      //     break;
+      //   default:
+      //     break;
+      // }
 
-      switch (obj.cell.model.type) {
-        case 'markdown':
-        case 'raw':
-          action = {
-            do: 'cellOutputs',
-            doArguments: [index, []],
-            undo: 'clearOutputs',
-            undoArguments: [index]
-          };
-          // Promise.resolve(this.notebookProvenance.tracker.applyAction(action, true));
-          break;
-        case 'code':
-          iaction = {
-            do: 'executeCell',
-            doArguments: [index],
-          };
-          // Promise.resolve(this.notebookProvenance.tracker.applyAction(iaction, true));
-          break;
-        default:
-          break;
-      }
+      debugger
+      let action = this.notebookProvenance.prov.addAction(
+        "cellOutputs",
+        (state:NodeState) => {
+          // @ts-ignore
+          state.cells = stringify(self.notebookProvenance.notebook.model.cells);
+
+          return state;
+        }
+      );
+
+      console.log(action);
+
+      action
+        .addEventType("changeCells")
+        .alwaysStoreState(true)
+        .applyAction();
+
     }, this);
   }
 
-  /**
-   * Handle a change in the cells list
-   */
-  private _onCellsChanged(
-    list: IObservableList<ICellModel>,
-    change: IObservableList.IChangedArgs<ICellModel>
-  ): void {
-    if (this.notebookProvenance.pauseTracking) {
-      return;
-    }
-
-    console.groupCollapsed('cells changed ->', change.type);
-    console.log(change);
-
-    let action: Action;
-
-    switch (change.type) {
-      case 'add':
-        action = {
-          do: 'addCell',
-          doArguments: [change.newIndex, change.newValues[0].toJSON()],
-          undo: 'removeCell',
-          undoArguments: [change.newIndex]
-        };
-        break;
-      case 'remove':
-        action = {
-          do: 'removeCell',
-          doArguments: [change.oldIndex],
-          undo: 'addCell',
-          undoArguments: [change.oldIndex, change.oldValues[0].toJSON()]
-        };
-        break;
-      case 'move':
-        action = {
-          do: 'moveCell',
-          doArguments: [change.oldIndex, change.newIndex],
-          undo: 'moveCell',
-          undoArguments: [change.newIndex, change.oldIndex]
-        };
-        break;
-      case 'set': // caused by, e.g., change cell type
-        action = {
-          do: 'setCell',
-          doArguments: [change.newIndex, change.newValues[0].toJSON()],
-          undo: 'setCell',
-          undoArguments: [change.oldIndex, change.oldValues[0].toJSON()]
-        };
-        break;
-      default:
-        return;
-    }
-
-    // Promise.resolve(this.notebookProvenance.tracker.applyAction(action!, true)); // adds this action to the graph
-    console.groupEnd();
-  }
+  // /**
+  //  * Handle a change in the cells list
+  //  */
+  // private _onCellsChanged(
+  //   list: IObservableList<ICellModel>,
+  //   change: IObservableList.IChangedArgs<ICellModel>
+  // ): void {
+  //   if (this.notebookProvenance.pauseTracking) {
+  //     return;
+  //   }
+  //
+  //   console.groupCollapsed('cells changed ->', change.type);
+  //   console.log(change);
+  //
+  //   let action: Action;
+  //
+  //   switch (change.type) {
+  //     case 'add':
+  //       action = {
+  //         do: 'addCell',
+  //         doArguments: [change.newIndex, change.newValues[0].toJSON()],
+  //         undo: 'removeCell',
+  //         undoArguments: [change.newIndex]
+  //       };
+  //       break;
+  //     case 'remove':
+  //       action = {
+  //         do: 'removeCell',
+  //         doArguments: [change.oldIndex],
+  //         undo: 'addCell',
+  //         undoArguments: [change.oldIndex, change.oldValues[0].toJSON()]
+  //       };
+  //       break;
+  //     case 'move':
+  //       action = {
+  //         do: 'moveCell',
+  //         doArguments: [change.oldIndex, change.newIndex],
+  //         undo: 'moveCell',
+  //         undoArguments: [change.newIndex, change.oldIndex]
+  //       };
+  //       break;
+  //     case 'set': // caused by, e.g., change cell type
+  //       action = {
+  //         do: 'setCell',
+  //         doArguments: [change.newIndex, change.newValues[0].toJSON()],
+  //         undo: 'setCell',
+  //         undoArguments: [change.oldIndex, change.oldValues[0].toJSON()]
+  //       };
+  //       break;
+  //     default:
+  //       return;
+  //   }
+  //
+  //   // Promise.resolve(this.notebookProvenance.tracker.applyAction(action!, true)); // adds this action to the graph
+  //   console.groupEnd();
+  // }
 
 }
 

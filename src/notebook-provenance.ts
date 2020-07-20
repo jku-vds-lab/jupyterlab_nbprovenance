@@ -69,7 +69,7 @@ const initialState: NodeState = {
   activeCell: 0
 }
 
-type EventTypes = "changeActiveCell" | "addCell" ;
+type EventTypes = "changeActiveCell" | "changeCells" ;
 
 
 /**
@@ -117,12 +117,14 @@ export class NotebookProvenance {
     this.prov.addObserver(["cells"], () => {
       // provVisUpdate()
       // console.log(this.prov.graph())
+      debugger
       console.log("cells observer called");
     });
 
     this.prov.addObserver(["activeCell"], () => {
       // provVisUpdate()
       // console.log(this.prov.graph())
+      debugger
       console.log("activeCell observer called");
     });
 
