@@ -29,7 +29,7 @@ function activate(app: JupyterLab, restorer: ILayoutRestorer, nbTracker: INotebo
     });
   });
 
-  const provenanceView = new SideBar(app.shell);
+  const provenanceView = new SideBar(app.shell, nbTracker);
   provenanceView.id = 'nbprovenance-view';
   provenanceView.title.caption = 'Notebook Provenance';
   provenanceView.title.iconClass = 'jp-nbprovenanceIcon';

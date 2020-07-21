@@ -2,11 +2,11 @@
 
 // import * as React from 'react';
 // import * as ReactDOM from 'react-dom';
-// import { NotebookProvenance } from './notebook-provenance-visdesignlab';
+import { NotebookProvenance } from './notebook-provenance';
 // import { ProvenanceTreeVisualizationReact } from '@visualstorytelling/provenance-tree-visualization-react';
 import { LabShell } from "@jupyterlab/application";
-// import { NotebookPanel, Notebook, INotebookTracker } from '@jupyterlab/notebook';
-// import { notebookModelCache } from '.';
+import { NotebookPanel, Notebook, INotebookTracker } from '@jupyterlab/notebook';
+import { notebookModelCache } from '.';
 import { Widget } from "@lumino/widgets";
 import { Message } from "@lumino/messaging";
 import "./action-listener";
@@ -39,7 +39,8 @@ import
 // import Scatterplot from "./scatterplot"
 
 // import ReactDOM from 'react-dom'
-// import * as d3 from "d3"
+import * as d3 from "d3"
+
 
 // import {
 //     ProvVis,
@@ -60,68 +61,11 @@ import
 
 
 
-// copy from example just to try it out
-/**
- * interface representing the state of the application
- */
-// tslint:disable-next-line:interface-name
-export interface INodeState {
-    selectedCell: string;
-}
-
-/**
- * Initial state
- */
-
-const initialState: INodeState = {
-    selectedCell: "none"
-};
-
-type EventTypes = "select cell" | "hover cell";
-
-// initialize provenance with the first state
-let prov = initProvenance<INodeState, EventTypes, string>(initialState, false);
-
-
-/**
- * Function called when a cell is selected. Applies an action to provenance.
- */
-let selectCellUpdate = function(newSelected: string) {
-    let action = prov.addAction(
-      newSelected + " Selected",
-      (state: INodeState) => {
-          state.selectedCell = newSelected;
-          return state;
-      }
-    );
-
-    action
-      .addEventType("select cell")
-      .applyAction();
-};
-
-
-// /**
-//  * Observer for when the selected node state is changed. Calls selectNode in scatterplot to update vis.
-//  */
-// prov.addObserver(["selectedNode"], () => {
-//     scatterplot.selectNode(prov.current().getState().selectedNode);
-//
-//     console.log("select obs called")
-//
-//     provVisUpdate()
-//
-// });
-
-// Setup ProvVis once initially
-// provVisUpdate();
-
-
 
 // Create function to pass to the ProvVis library for when a node is selected in the graph.
 // For our purposes, were simply going to jump to the selected node.
 let visCallback = function(newNode: NodeID) {
-    prov.goToNode(newNode);
+    // prov.goToNode(newNode);
 
     // Incase the state doesn't change and the observers arent called, updating the ProvVis here.
     // provVisUpdate();
@@ -129,21 +73,29 @@ let visCallback = function(newNode: NodeID) {
 
 
 
-
-
-
-
-
-
 /**
  * The main view for the notebook provenance.
  */
 export class SideBar extends Widget {
-    constructor(shell: LabShell) {
+
+    private notebookProvenance: NotebookProvenance | null = null;
+
+    constructor(shell: LabShell, nbTracker: INotebookTracker) {
         super();
 
         this.addClass("jp-nbprovenance-view");
 
+        nbTracker.widgetAdded.connect((_: INotebookTracker, nbPanel: NotebookPanel) => {
+            // wait until the session with the notebook model is ready
+            nbPanel.sessionContext.ready.then(() => {
+                // update provenance information only for the current widget
+                if (shell.currentWidget instanceof NotebookPanel && nbPanel === shell.currentWidget) {
+                    const notebook: Notebook = nbPanel.content;
+                    this.notebookProvenance = (notebookModelCache.has(notebook)) ? notebookModelCache.get(notebook)! : null;
+                    this.update();
+                }
+            });
+        });
 
         // Add a summary element to the panel
         this.summary = document.createElement("p");
@@ -151,21 +103,11 @@ export class SideBar extends Widget {
 
         // Add the provenance div
         this.provtree = document.createElement("div");
-        this.provtree.className = "ProvDiv";
+        this.provtree.id = "ProvDiv";
         this.node.appendChild(this.provtree);
 
-
-        // tslint:disable-next-line:no-debugger
-
-        // tslint:disable-next-line:no-unused-expression
-        prov;
-
-
-        selectCellUpdate("thisIsTheNewSelect");
-
-
-        // tslint:disable-next-line:no-unused-expression
-        prov;
+        this.summary.innerText = "ÜBERSCHRIFT2";
+        //somehow, d3 doesn't do anything if I write it here
 
         provVisUpdate();
     }
@@ -184,7 +126,7 @@ export class SideBar extends Widget {
      * Handle update requests for the widget.
      */
     async onUpdateRequest(msg: Message): Promise<void> {
-        this.summary.innerText = "Überschrift";
+
     }
 
     /**
@@ -193,6 +135,14 @@ export class SideBar extends Widget {
      * Make sure the widget is rendered, even if the model has not changed.
      */
     protected onAfterAttach(msg: Message): void {
+        d3.select("#ProvDiv")
+          .append("button")
+          .text("undo")
+          .on("click", () => {
+              debugger
+              // @ts-ignore
+              this.notebookProvenance.prov.goBackOneStep();
+          });
         this.update();
     }
 }

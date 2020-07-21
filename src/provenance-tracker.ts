@@ -155,11 +155,10 @@ export class NotebookProvenanceTracker {
 
       debugger
       let action = this.notebookProvenance.prov.addAction(
-        "cellOutputs",
+        "executeCell",
         (state:NodeState) => {
           // @ts-ignore
           state.cells = stringify(self.notebookProvenance.notebook.model.cells);
-
           return state;
         }
       );

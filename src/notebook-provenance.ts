@@ -116,16 +116,17 @@ export class NotebookProvenance {
 
     this.prov.addObserver(["cells"], () => {
       // provVisUpdate()
-      // console.log(this.prov.graph())
+      console.log(this.prov.graph())
       debugger
       console.log("cells observer called");
     });
 
     this.prov.addObserver(["activeCell"], () => {
       // provVisUpdate()
-      // console.log(this.prov.graph())
+      console.log(this.prov.graph())
       debugger
       console.log("activeCell observer called");
+      this._actionFunctions.changeActiveCell(this.prov.current().getState().activeCell);
     });
 
     this._nbtracker = new NotebookProvenanceTracker(this);
