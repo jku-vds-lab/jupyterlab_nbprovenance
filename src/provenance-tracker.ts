@@ -4,7 +4,7 @@ import { IObservableList } from '@jupyterlab/observables';
 import { ICellModel, Cell } from '@jupyterlab/cells';
 import {NodeState, NotebookProvenance} from './notebook-provenance';
 import { toArray } from '@lumino/algorithm';
-import { stringify } from 'circular-json';
+// import { stringify } from 'circular-json';
 
 /**
  * A notebook widget extension that adds a button to the toolbar.
@@ -95,16 +95,12 @@ export class NotebookProvenanceTracker {
         }
       );
 
-      debugger
       console.log(action);
 
       action
         .addEventType("changeActiveCell")
         .alwaysStoreState(true)
         .applyAction();
-
-
-
 
       prevActiveCellIndex = notebook.activeCellIndex;
       if (activeCell) {
@@ -153,12 +149,15 @@ export class NotebookProvenanceTracker {
       //     break;
       // }
 
-      debugger
       let action = this.notebookProvenance.prov.addAction(
         "executeCell",
         (state:NodeState) => {
           // @ts-ignore
-          state.cells = stringify(self.notebookProvenance.notebook.model.cells);
+          // state.cells = stringify(self.notebookProvenance.notebook.model.cells);
+          debugger
+          // @ts-ignore
+          // state.cells = self.notebookProvenance.notebook.model.cells.iter().clone();
+          state.model = self.notebookProvenance.notebook.model.toJSON();
           return state;
         }
       );

@@ -106,7 +106,7 @@ export class SideBar extends Widget {
         this.provtree.id = "ProvDiv";
         this.node.appendChild(this.provtree);
 
-        this.summary.innerText = "ÜBERSCHRIFT2";
+        this.summary.innerText = "asdf";
         //somehow, d3 doesn't do anything if I write it here
 
         provVisUpdate();

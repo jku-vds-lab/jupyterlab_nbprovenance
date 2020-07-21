@@ -45,12 +45,14 @@ import {NotebookProvenanceTracker} from './provenance-tracker'
 // import {initProvenance} from "@visdesignlab/provenance-lib-core";
 // import Provenance from "@visdesignlab/trrack/src/Interfaces/Provenance";
 
+// import { parse } from 'circular-json';
+
 
 /**
  * interface representing the state of the application
  */
 export interface NodeState {
-  cells: Object;
+  model: Object;
   activeCell: number;
 };
 
@@ -65,7 +67,7 @@ export interface NodeExtra {
  */
 
 const initialState: NodeState = {
-  cells: {},
+  model: {},
   activeCell: 0
 }
 
@@ -100,7 +102,7 @@ export class NotebookProvenance {
 
     this._registry = new ActionFunctionRegistry();
     this._actionFunctions = new ActionFunctions(this.notebook, this.sessionContext);
-    debugger
+
 
     // // get method names from the object (see https://stackoverflow.com/a/48051971)
     // let actionFunctionNames = Object.getPrototypeOf(this._actionFunctions);
@@ -114,17 +116,22 @@ export class NotebookProvenance {
     //     this.prov.addObserver([name], (this._actionFunctions as any)[name]);
     //   });
 
-    this.prov.addObserver(["cells"], () => {
+    this.prov.addObserver(["model"], () => {
       // provVisUpdate()
       console.log(this.prov.graph())
       debugger
-      console.log("cells observer called");
+      console.log("model observer called");
+      // @ts-ignore
+      // this.notebook.model.cells.set(JSON.parse(this.prov.current().getState().cells));
+      // let cells = JSON.parse(this.prov.current().getState().cells);
+      // this.notebook.model.cells.pushAll(this.prov.current().getState().cells);
+      this.notebook.model.fromJSON(this.prov.current().getState().model);
+      debugger
     });
 
     this.prov.addObserver(["activeCell"], () => {
       // provVisUpdate()
       console.log(this.prov.graph())
-      debugger
       console.log("activeCell observer called");
       this._actionFunctions.changeActiveCell(this.prov.current().getState().activeCell);
     });
