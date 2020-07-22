@@ -19,8 +19,6 @@ import {ActionFunctions} from './action-functions';
 import {ISessionContext} from '@jupyterlab/apputils';
 import {sessionContextDialogs} from '@jupyterlab/apputils';
 
-// import {ProvenanceGraph} from '@visdesignlab/provenance-lib-core';
-
 import {
   initProvenance,
   // ProvenanceGraph,
@@ -38,11 +36,11 @@ import {
   CurrentNode,
   Artifacts,
   Extra
-} from '@visdesignlab/provenance-lib-core';
+} from '@visdesignlab/trrack';
 
 
 import {NotebookProvenanceTracker} from './provenance-tracker'
-// import {initProvenance} from "@visdesignlab/provenance-lib-core";
+// import {initProvenance} from "@visdesignlab/trrack";
 // import Provenance from "@visdesignlab/trrack/src/Interfaces/Provenance";
 
 // import { parse } from 'circular-json';
@@ -71,7 +69,7 @@ const initialState: NodeState = {
   activeCell: 0
 }
 
-type EventTypes = "changeActiveCell" | "changeCells" ;
+export type EventTypes = "changeActiveCell" | "executeCell" | "addCell" | "removeCell" | "moveCell" | "setCell";
 
 
 /**
@@ -88,6 +86,8 @@ export class NotebookProvenance {
 
   //initialize provenance with the first state
   private _prov: Provenance<NodeState, EventTypes, NodeExtra>;
+
+  private _pauseTracking: boolean;
 
   // private _prov: string;
 
@@ -121,18 +121,19 @@ export class NotebookProvenance {
       console.log(this.prov.graph())
       debugger
       console.log("model observer called");
+      this._pauseTracking = true;
       // @ts-ignore
-      // this.notebook.model.cells.set(JSON.parse(this.prov.current().getState().cells));
-      // let cells = JSON.parse(this.prov.current().getState().cells);
-      // this.notebook.model.cells.pushAll(this.prov.current().getState().cells);
       this.notebook.model.fromJSON(this.prov.current().getState().model);
+      this._pauseTracking = false;
       debugger
     });
 
     this.prov.addObserver(["activeCell"], () => {
       // provVisUpdate()
       console.log(this.prov.graph())
+      this._pauseTracking = true;
       console.log("activeCell observer called");
+      this._pauseTracking = true;
       this._actionFunctions.changeActiveCell(this.prov.current().getState().activeCell);
     });
 
@@ -161,8 +162,9 @@ export class NotebookProvenance {
     return this._prov;
   }
 
+  // instad of actionFunctions.pauseTracking just use a field here
   public get pauseTracking() {
-    return this._actionFunctions.pauseTracking;
+    return this._pauseTracking;
   }
 
   // public get graph(): ProvenanceGraph {

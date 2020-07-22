@@ -13,7 +13,7 @@ import "./action-listener";
 // import { ProvenanceGraphTraverser } from '@visualstorytelling/provenance-core';
 
 import "../style/side-bar.css";
-// import {initProvenance} from '@visdesignlab/provenance-lib-core/src';
+// import {initProvenance} from '@visdesignlab/trrack/src';
 
 
 import
@@ -34,7 +34,7 @@ import
     CurrentNode,
     Artifacts,
     Extra
-} from "@visdesignlab/provenance-lib-core";
+} from "@visdesignlab/trrack";
 
 // import Scatterplot from "./scatterplot"
 
@@ -42,23 +42,13 @@ import
 import * as d3 from "d3"
 
 
-// import {
-//     ProvVis,
-//     EventConfig,
-//     Config,
-//     ProvVisConfig,
-//     ProvVisCreator
-// } from "@visdesignlab/provvis";
-
-
-// import {
-//     ProvVis,
-//     EventConfig,
-//     Config,
-//     ProvVisConfig,
-//     ProvVisCreator
-// } from "../ProvVis/provvis";
-
+import {
+    // ProvVis,
+    // EventConfig,
+    // Config,
+    // ProvVisConfig,
+    ProvVisCreator
+} from "@visdesignlab/trrack-vis";
 
 
 
@@ -106,10 +96,10 @@ export class SideBar extends Widget {
         this.provtree.id = "ProvDiv";
         this.node.appendChild(this.provtree);
 
-        this.summary.innerText = "asdf";
+        this.summary.innerText = "ayaay ";
         //somehow, d3 doesn't do anything if I write it here
 
-        provVisUpdate();
+        // provVisUpdate();
     }
 
     /**
@@ -144,6 +134,7 @@ export class SideBar extends Widget {
               this.notebookProvenance.prov.goBackOneStep();
           });
         this.update();
+        provVisUpdate();
     }
 }
 
@@ -151,8 +142,9 @@ export class SideBar extends Widget {
 function provVisUpdate() {
     document.getElementById("ProvDiv")!;
     console.log("UPDATING THE VISUALIZATION");
+    debugger
     // ProvVisCreator(
     //   document.getElementById("ProvDiv")!,
-    //   prov,
+    //   this.notebookProvenance.prov,
     //   visCallback);
 }

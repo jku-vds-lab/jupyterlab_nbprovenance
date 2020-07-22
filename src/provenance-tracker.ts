@@ -1,9 +1,10 @@
 import { Notebook, NotebookActions } from '@jupyterlab/notebook';
-import { Action, ReversibleAction, IrreversibleAction } from '@visualstorytelling/provenance-core';
+// import { Action, ReversibleAction, IrreversibleAction } from '@visualstorytelling/provenance-core';
 import { IObservableList } from '@jupyterlab/observables';
 import { ICellModel, Cell } from '@jupyterlab/cells';
-import {NodeState, NotebookProvenance} from './notebook-provenance';
+import {NodeExtra, NodeState, EventTypes, NotebookProvenance} from './notebook-provenance';
 import { toArray } from '@lumino/algorithm';
+import {ActionFunction} from "@visdesignlab/trrack";
 // import { stringify } from 'circular-json';
 
 /**
@@ -24,7 +25,7 @@ export class NotebookProvenanceTracker {
     // this.notebookProvenance.notebook.activeCellChanged.connect(() => {
     //   console.log(['activeCellChanged', arguments]);
     // });
-    // this.notebookProvenance.notebook.model!.cells.changed.connect(this._onCellsChanged, this);
+    this.notebookProvenance.notebook.model!.cells.changed.connect(this._onCellsChanged, this);
 
     this.trackCellExecution();
 
@@ -165,126 +166,171 @@ export class NotebookProvenanceTracker {
       console.log(action);
 
       action
-        .addEventType("changeCells")
+        .addEventType("executeCell")
         .alwaysStoreState(true)
         .applyAction();
 
     }, this);
   }
 
-  // /**
-  //  * Handle a change in the cells list
-  //  */
-  // private _onCellsChanged(
-  //   list: IObservableList<ICellModel>,
-  //   change: IObservableList.IChangedArgs<ICellModel>
-  // ): void {
-  //   if (this.notebookProvenance.pauseTracking) {
-  //     return;
-  //   }
-  //
-  //   console.groupCollapsed('cells changed ->', change.type);
-  //   console.log(change);
-  //
-  //   let action: Action;
-  //
-  //   switch (change.type) {
-  //     case 'add':
-  //       action = {
-  //         do: 'addCell',
-  //         doArguments: [change.newIndex, change.newValues[0].toJSON()],
-  //         undo: 'removeCell',
-  //         undoArguments: [change.newIndex]
-  //       };
-  //       break;
-  //     case 'remove':
-  //       action = {
-  //         do: 'removeCell',
-  //         doArguments: [change.oldIndex],
-  //         undo: 'addCell',
-  //         undoArguments: [change.oldIndex, change.oldValues[0].toJSON()]
-  //       };
-  //       break;
-  //     case 'move':
-  //       action = {
-  //         do: 'moveCell',
-  //         doArguments: [change.oldIndex, change.newIndex],
-  //         undo: 'moveCell',
-  //         undoArguments: [change.newIndex, change.oldIndex]
-  //       };
-  //       break;
-  //     case 'set': // caused by, e.g., change cell type
-  //       action = {
-  //         do: 'setCell',
-  //         doArguments: [change.newIndex, change.newValues[0].toJSON()],
-  //         undo: 'setCell',
-  //         undoArguments: [change.oldIndex, change.oldValues[0].toJSON()]
-  //       };
-  //       break;
-  //     default:
-  //       return;
-  //   }
-  //
-  //   // Promise.resolve(this.notebookProvenance.tracker.applyAction(action!, true)); // adds this action to the graph
-  //   console.groupEnd();
-  // }
+  /**
+   * Handle a change in the cells list
+   */
+  private _onCellsChanged(
+    list: IObservableList<ICellModel>,
+    change: IObservableList.IChangedArgs<ICellModel>
+  ): void {
+
+    if (this.notebookProvenance.pauseTracking) {
+      return;
+    }
+
+    const self = this;
+
+    console.log("_onCellsChanged");
+
+    console.groupCollapsed('cells changed ->', change.type);
+    console.log(change);
+
+    let action;
+    debugger
+    switch (change.type) {
+      case 'add':
+        action = this.notebookProvenance.prov.addAction(
+          "addCell",
+          (state:NodeState) => {
+            debugger
+            // @ts-ignore
+            state.model = self.notebookProvenance.notebook.model.toJSON();
+            return state;
+          }
+        );
+
+        console.log(action);
+
+        action
+          .addEventType("addCell")
+          .alwaysStoreState(true)
+          .applyAction();
+        break;
+      case 'remove':
+        action = this.notebookProvenance.prov.addAction(
+          "removeCell",
+          (state:NodeState) => {
+            debugger
+            // @ts-ignore
+            state.model = self.notebookProvenance.notebook.model.toJSON();
+            return state;
+          }
+        );
+
+        console.log(action);
+
+        action
+          .addEventType("removeCell")
+          .alwaysStoreState(true)
+          .applyAction();
+        break;
+      case 'move':
+        action = this.notebookProvenance.prov.addAction(
+          "moveCell",
+          (state:NodeState) => {
+            debugger
+            // @ts-ignore
+            state.model = self.notebookProvenance.notebook.model.toJSON();
+            return state;
+          }
+        );
+
+        console.log(action);
+
+        action
+          .addEventType("moveCell")
+          .alwaysStoreState(true)
+          .applyAction();
+        break;
+      case 'set': // caused by, e.g., change cell type
+        action = this.notebookProvenance.prov.addAction(
+          "setCell",
+          (state:NodeState) => {
+            debugger
+            // @ts-ignore
+            state.model = self.notebookProvenance.notebook.model.toJSON();
+            return state;
+          }
+        );
+
+        console.log(action);
+
+        action
+          .addEventType("setCell")
+          .alwaysStoreState(true)
+          .applyAction();
+        break;
+      default:
+        return;
+    }
+
+    // Promise.resolve(this.notebookProvenance.tracker.applyAction(action!, true)); // adds this action to the graph
+    console.groupEnd();
+  }
 
 }
 
 export function findAction(actionName: string, args: any) {
-  const notebook: Notebook = args[0];
-  let action: Action;
-  switch (actionName) {
-    case 'enableOutputScrolling':
-      action = {
-        do: 'enableOutputScrolling',
-        doArguments: [notebook.activeCellIndex],
-        undo: 'disableOutputScrolling',
-        undoArguments: [notebook.activeCellIndex]
-      };
-      break;
-    case 'disableOutputScrolling':
-      action = {
-        do: 'disableOutputScrolling',
-        doArguments: [notebook.activeCellIndex],
-        undo: 'enableOutputScrolling',
-        undoArguments: [notebook.activeCellIndex]
-      };
-      break;
-    case 'selectAll':
-      action = {
-        do: 'selectAll',
-        doArguments: [],
-        undo: 'deselectAll',
-        undoArguments: []
-      };
-      break;
-    case 'deselectAll':
-      action = {
-        do: 'deselectAll',
-        doArguments: [],
-        undo: 'selectAll',
-        undoArguments: []
-      };
-      break;
-    case 'selectAbove':
-      action = {
-        do: 'selectAbove',
-        doArguments: [notebook.activeCellIndex],
-        undo: 'deselectAll', // TODO instead of deselectAll the old selection should be stored and restored
-        undoArguments: []
-      };
-      break;
-    case 'selectBelow':
-      action = {
-        do: 'selectBelow',
-        doArguments: [notebook.activeCellIndex],
-        undo: 'deselectAll', // TODO instead of deselectAll the old selection should be stored and restored
-        undoArguments: []
-      };
-      break;
-    default:
-      throw new Error('Unknown action name, no compatible provenance action available.');
-  }
-  return action;
+  // const notebook: Notebook = args[0];
+  // let action: Action;
+  // switch (actionName) {
+  //   case 'enableOutputScrolling':
+  //     action = {
+  //       do: 'enableOutputScrolling',
+  //       doArguments: [notebook.activeCellIndex],
+  //       undo: 'disableOutputScrolling',
+  //       undoArguments: [notebook.activeCellIndex]
+  //     };
+  //     break;
+  //   case 'disableOutputScrolling':
+  //     action = {
+  //       do: 'disableOutputScrolling',
+  //       doArguments: [notebook.activeCellIndex],
+  //       undo: 'enableOutputScrolling',
+  //       undoArguments: [notebook.activeCellIndex]
+  //     };
+  //     break;
+  //   case 'selectAll':
+  //     action = {
+  //       do: 'selectAll',
+  //       doArguments: [],
+  //       undo: 'deselectAll',
+  //       undoArguments: []
+  //     };
+  //     break;
+  //   case 'deselectAll':
+  //     action = {
+  //       do: 'deselectAll',
+  //       doArguments: [],
+  //       undo: 'selectAll',
+  //       undoArguments: []
+  //     };
+  //     break;
+  //   case 'selectAbove':
+  //     action = {
+  //       do: 'selectAbove',
+  //       doArguments: [notebook.activeCellIndex],
+  //       undo: 'deselectAll', // TODO instead of deselectAll the old selection should be stored and restored
+  //       undoArguments: []
+  //     };
+  //     break;
+  //   case 'selectBelow':
+  //     action = {
+  //       do: 'selectBelow',
+  //       doArguments: [notebook.activeCellIndex],
+  //       undo: 'deselectAll', // TODO instead of deselectAll the old selection should be stored and restored
+  //       undoArguments: []
+  //     };
+  //     break;
+  //   default:
+  //     throw new Error('Unknown action name, no compatible provenance action available.');
+  // }
+  // return action;
 }

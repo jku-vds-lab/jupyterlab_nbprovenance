@@ -6,20 +6,20 @@ import { findAction } from './provenance-tracker';
 
 
 const handler = {
-    apply: function (target: any, thisArg: any, argumentsList: any) {
-        console.log('Proxy called via apply :', target.name, argumentsList);
-        const nbprov: NotebookProvenance | undefined = notebookModelCache.get(argumentsList[0]);
-        if (nbprov && !nbprov.pauseTracking) {
-            try {
-                const action: Action = findAction(target.name, argumentsList);
-                nbprov.tracker.applyAction(action, true);
-
-            } catch (e) {
-                // TODO handle error
-            }
-        }
-        return target.apply(thisArg, argumentsList);
-    }
+    // apply: function (target: any, thisArg: any, argumentsList: any) {
+    //     console.log('Proxy called via apply :', target.name, argumentsList);
+    //     const nbprov: NotebookProvenance | undefined = notebookModelCache.get(argumentsList[0]);
+    //     if (nbprov && !nbprov.pauseTracking) {
+    //         try {
+    //             const action: Action = findAction(target.name, argumentsList);
+    //             nbprov.tracker.applyAction(action, true);
+    //
+    //         } catch (e) {
+    //             // TODO handle error
+    //         }
+    //     }
+    //     return target.apply(thisArg, argumentsList);
+    // }
 };
 
 export const originalNotebookActions: any = {};
