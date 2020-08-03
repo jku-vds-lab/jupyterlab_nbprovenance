@@ -3,6 +3,10 @@ import { ICellModel, CodeCellModel, MarkdownCell, CodeCell } from '@jupyterlab/c
 import { NotebookActions, Notebook } from '@jupyterlab/notebook';
 import { ISessionContext } from '@jupyterlab/apputils';
 
+
+
+// This will be obsolete, since it is not event-based anymore
+
 /**
  * Define available action functions that are calling the NotebookActions
  *

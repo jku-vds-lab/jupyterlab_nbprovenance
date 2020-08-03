@@ -42,13 +42,13 @@ import
 import * as d3 from "d3"
 
 
-import {
-    // ProvVis,
-    // EventConfig,
-    // Config,
-    // ProvVisConfig,
-    ProvVisCreator
-} from "@visdesignlab/trrack-vis";
+// import {
+//     // ProvVis,
+//     // EventConfig,
+//     // Config,
+//     // ProvVisConfig,
+//     ProvVisCreator
+// } from "@visdesignlab/trrack-vis";
 
 
 
@@ -96,7 +96,7 @@ export class SideBar extends Widget {
         this.provtree.id = "ProvDiv";
         this.node.appendChild(this.provtree);
 
-        this.summary.innerText = "ayaay ";
+        this.summary.innerText = "wert ";
         //somehow, d3 doesn't do anything if I write it here
 
         // provVisUpdate();
@@ -134,7 +134,7 @@ export class SideBar extends Widget {
               this.notebookProvenance.prov.goBackOneStep();
           });
         this.update();
-        provVisUpdate();
+        // provVisUpdate();
     }
 }
 

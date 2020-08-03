@@ -2,7 +2,7 @@ import { Notebook, NotebookActions } from '@jupyterlab/notebook';
 // import { Action, ReversibleAction, IrreversibleAction } from '@visualstorytelling/provenance-core';
 import { IObservableList } from '@jupyterlab/observables';
 import { ICellModel, Cell } from '@jupyterlab/cells';
-import {NodeExtra, NodeState, EventTypes, NotebookProvenance} from './notebook-provenance';
+import {ApplicationExtra, ApplicationState, EventTypes, NotebookProvenance} from './notebook-provenance';
 import { toArray } from '@lumino/algorithm';
 import {ActionFunction} from "@visdesignlab/trrack";
 // import { stringify } from 'circular-json';
@@ -63,7 +63,7 @@ export class NotebookProvenanceTracker {
           // Promise.resolve(this.notebookProvenance.tracker.applyAction(cellChangedAction, true)); //hier wird also zuerst die action changeValue ausgeführt, danach erst change active cell
           let action = this.notebookProvenance.prov.addAction(
             cell.value.text,
-            (state:NodeState) => {
+            (state:ApplicationState) => {
               state.activeCell = Number(cell.value.text);
               return state;
             }
@@ -90,7 +90,7 @@ export class NotebookProvenanceTracker {
 
       let action = this.notebookProvenance.prov.addAction(
         "changeActiveCell to " + String(notebook.activeCellIndex),
-        (state:NodeState) => {
+        (state:ApplicationState) => {
           state.activeCell = notebook.activeCellIndex;
           return state;
         }
@@ -152,7 +152,7 @@ export class NotebookProvenanceTracker {
 
       let action = this.notebookProvenance.prov.addAction(
         "executeCell",
-        (state:NodeState) => {
+        (state:ApplicationState) => {
           // @ts-ignore
           // state.cells = stringify(self.notebookProvenance.notebook.model.cells);
           debugger
@@ -198,7 +198,7 @@ export class NotebookProvenanceTracker {
       case 'add':
         action = this.notebookProvenance.prov.addAction(
           "addCell",
-          (state:NodeState) => {
+          (state:ApplicationState) => {
             debugger
             // @ts-ignore
             state.model = self.notebookProvenance.notebook.model.toJSON();
@@ -216,7 +216,7 @@ export class NotebookProvenanceTracker {
       case 'remove':
         action = this.notebookProvenance.prov.addAction(
           "removeCell",
-          (state:NodeState) => {
+          (state:ApplicationState) => {
             debugger
             // @ts-ignore
             state.model = self.notebookProvenance.notebook.model.toJSON();
@@ -234,7 +234,7 @@ export class NotebookProvenanceTracker {
       case 'move':
         action = this.notebookProvenance.prov.addAction(
           "moveCell",
-          (state:NodeState) => {
+          (state:ApplicationState) => {
             debugger
             // @ts-ignore
             state.model = self.notebookProvenance.notebook.model.toJSON();
@@ -252,7 +252,7 @@ export class NotebookProvenanceTracker {
       case 'set': // caused by, e.g., change cell type
         action = this.notebookProvenance.prov.addAction(
           "setCell",
-          (state:NodeState) => {
+          (state:ApplicationState) => {
             debugger
             // @ts-ignore
             state.model = self.notebookProvenance.notebook.model.toJSON();

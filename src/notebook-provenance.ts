@@ -49,12 +49,12 @@ import {NotebookProvenanceTracker} from './provenance-tracker'
 /**
  * interface representing the state of the application
  */
-export interface NodeState {
+export interface ApplicationState {
   model: Object;
   activeCell: number;
 };
 
-export interface NodeExtra {
+export interface ApplicationExtra {
   nodeNum: number;
   nodeX: number;
   nodeY: number;
@@ -64,7 +64,7 @@ export interface NodeExtra {
  * Initial state
  */
 
-const initialState: NodeState = {
+const initialState: ApplicationState = {
   model: {},
   activeCell: 0
 }
@@ -85,9 +85,10 @@ export class NotebookProvenance {
 
 
   //initialize provenance with the first state
-  private _prov: Provenance<NodeState, EventTypes, NodeExtra>;
+  private _prov: Provenance<ApplicationState, EventTypes, ApplicationExtra>;
 
-  private _pauseTracking: boolean;
+  // instad of actionFunctions.pauseTracking just use a field here
+  public pauseTracking: boolean = false;
 
   // private _prov: string;
 
@@ -97,11 +98,41 @@ export class NotebookProvenance {
   }
 
   private init() {
-    this._prov = initProvenance<NodeState, EventTypes, NodeExtra>(initialState, false);
+    this._prov = initProvenance<ApplicationState, EventTypes, ApplicationExtra>(initialState, false);
 
+
+    // this._prov = initProvenance<ApplicationState, EventTypes, ApplicationExtra>(initialState, true, true, {
+    //   apiKey: "AIzaSyCVqzgH7DhN9roG9gaFqGMqh-zj3vd8tww",
+    //   authDomain: "nbprovenance.firebaseapp.com",
+    //   databaseURL: "https://nbprovenance.firebaseio.com",
+    //   projectId: "nbprovenance",
+    //   storageBucket: "nbprovenance.appspot.com",
+    //   messagingSenderId: "814327140471",
+    //   appId: "1:814327140471:web:31b23df7c94ff3dd00b672",
+    //   measurementId: "G-Z6JK4BJ7KB"
+    // });
+
+
+    if (this.notebook.model!.metadata.has('provenance')) {
+      const serGraph = this.notebook.model!.metadata.get('provenance');
+      if (serGraph) {
+        this._prov.importProvenanceGraph(serGraph.toString());
+      } else {
+        //this._graph = new ProvenanceGraph({ name: 'nbprovenance.default.graph', version: this.app.version });
+      }
+    } else {
+      //this._graph = new ProvenanceGraph({ name: 'nbprovenance.default.graph', version: this.app.version });
+    }
+
+
+
+    debugger
+    // to check if it loaded: this.prov.graph()
+    console.log("Graph at beginning:", this.prov.graph())
 
     this._registry = new ActionFunctionRegistry();
     this._actionFunctions = new ActionFunctions(this.notebook, this.sessionContext);
+
 
 
     // // get method names from the object (see https://stackoverflow.com/a/48051971)
@@ -121,28 +152,39 @@ export class NotebookProvenance {
       console.log(this.prov.graph())
       debugger
       console.log("model observer called");
-      this._pauseTracking = true;
+      this.pauseTracking = true;
       // @ts-ignore
       this.notebook.model.fromJSON(this.prov.current().getState().model);
-      this._pauseTracking = false;
+      this.pauseTracking = false;
       debugger
+
+      this.saveProvenanceGraph();
     });
 
     this.prov.addObserver(["activeCell"], () => {
       // provVisUpdate()
       console.log(this.prov.graph())
-      this._pauseTracking = true;
       console.log("activeCell observer called");
-      this._pauseTracking = true;
-      this._actionFunctions.changeActiveCell(this.prov.current().getState().activeCell);
+      this.pauseTracking = true;
+      this._actionFunctions.changeActiveCell(this.prov.current().getState().activeCell)
+      this.pauseTracking = false;
+
+      let saveProvGraph = this._prov.exportProvenanceGraph();
+      debugger
     });
+
+    // Call this when all the observers are defined.
+    // This is optional and only used when you want to enable sharing and loading states from URL.
+    // Refere documentation for advanced usage scenario.
+    this.prov.done();
 
     this._nbtracker = new NotebookProvenanceTracker(this);
   }
 
-  protected onNodeAdded(node: ProvenanceNode) {
+  protected saveProvenanceGraph() {
+    debugger
     // @ts-ignore
-    this.notebook.model!.metadata.set('provenance', serializeProvenanceGraph(this._graph as ProvenanceGraph));
+    this.notebook.model!.metadata.set('provenance', this._prov.exportProvenanceGraph());
     // console.log('node added to graph', node);
   }
 
@@ -158,14 +200,11 @@ export class NotebookProvenance {
     return this._nbtracker;
   }
 
-  public get prov(): Provenance<NodeState, EventTypes, NodeExtra> {
+  public get prov(): Provenance<ApplicationState, EventTypes, ApplicationExtra> {
     return this._prov;
   }
 
-  // instad of actionFunctions.pauseTracking just use a field here
-  public get pauseTracking() {
-    return this._pauseTracking;
-  }
+
 
   // public get graph(): ProvenanceGraph {
   //     return this._graph as ProvenanceGraph;
