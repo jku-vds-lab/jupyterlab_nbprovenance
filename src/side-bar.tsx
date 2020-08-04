@@ -118,7 +118,7 @@ export class SideBar extends Widget {
      * Handle update requests for the widget.
      */
     async onUpdateRequest(msg: Message): Promise<void> {
-        debugger
+
         // @ts-ignore
         this.summary.innerText = "Provenance of " + (notebookProvenance.notebook.parent! as NotebookPanel).context.path;
         // @ts-ignore
@@ -146,7 +146,6 @@ export class SideBar extends Widget {
 // Create function to pass to the ProvVis library for when a node is selected in the graph.
 // For our purposes, were simply going to jump to the selected node.
 let visCallback = function(newNode: NodeID) {
-    debugger
     // @ts-ignore
     notebookProvenance.prov.goToNode(newNode);
     // Incase the state doesn't change and the observers arent called, updating the ProvVis here.
@@ -155,7 +154,7 @@ let visCallback = function(newNode: NodeID) {
 };
 
 export function provVisUpdate(prov: Provenance<unknown, string, unknown>) {
-    console.log("UPDATING THE VISUALIZATION");
+    // console.log("UPDATING THE VISUALIZATION");
     ProvVisCreator(
       document.getElementById("ProvDiv")!,
       prov,

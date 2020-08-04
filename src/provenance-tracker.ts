@@ -40,20 +40,22 @@ export class NotebookProvenanceTracker {
     const self = this;
     let prevActiveCellIndex = this.notebookProvenance.notebook.activeCellIndex;
     let prevActiveCellValue: string;
-    if (this.notebookProvenance.notebook.activeCell) {
-      prevActiveCellValue = this.notebookProvenance.notebook.activeCell.model.value.text;
-    }
+    // if (this.notebookProvenance.notebook.activeCell) {
+    //   prevActiveCellValue = this.notebookProvenance.notebook.activeCell.model.value.text;
+    // }
     const activeCellChangedListener = (notebook: Notebook) => {
-      console.log("activeCellChanged");
       if (this.notebookProvenance.pauseTracking) {
         return;
       }
+      console.log("activeCellChanged");
 
-      debugger
-      const activeCell = notebook.activeCell;
+
+      // @ts-ignore
+      const activeCell = notebook.activeCell.model.value.text;
       if (typeof prevActiveCellValue !== 'undefined') {
         // Check if cell has changed
         const cell = notebook.model!.cells.get(prevActiveCellIndex);
+        debugger
         if (cell && prevActiveCellValue !== cell.value.text) {
           // if so add to prov
           let action = this.notebookProvenance.prov.addAction(
@@ -65,7 +67,7 @@ export class NotebookProvenanceTracker {
               state.modelWorkaround = !state.modelWorkaround;
               return state;
             }
-          )
+          );
 
           console.log(action);
 
@@ -78,15 +80,13 @@ export class NotebookProvenanceTracker {
             .alwaysStoreState(true)
             .applyAction();
         }
-
-
       }
 
       let action = this.notebookProvenance.prov.addAction(
         "changeActiveCell to " + String(notebook.activeCellIndex),
         (state:ApplicationState) => {
           state.activeCell = notebook.activeCellIndex;
-          debugger
+
           // @ts-ignore
           return state;
         }
@@ -102,10 +102,12 @@ export class NotebookProvenanceTracker {
         .alwaysStoreState(true)
         .applyAction();
 
+      // the prevActiveCellIndex is used to find the cell that has last been active
+      // the prevActiveCellValue is used to store the value of the newly clicked cell --> stores the value before potentially changing the cell value
+      // so the value of the cell of PREVIOUS index is compared with the prevActiveCellVALUE when clicking a new cell
       prevActiveCellIndex = notebook.activeCellIndex;
-      debugger //do this BEFORE applyAction, because after the activeCell will not exist anymore
-      if (activeCell) {
-        prevActiveCellValue = activeCell.model.value.text;
+      if (this.notebookProvenance.notebook.activeCell) {
+        prevActiveCellValue = this.notebookProvenance.notebook.activeCell.model.value.text;
       }
     };
 
@@ -161,7 +163,8 @@ export class NotebookProvenanceTracker {
 
           // @ts-ignore
           // state.cells = self.notebookProvenance.notebook.model.cells.iter().clone();
-          state.model = self.notebookProvenance.notebook.model.cells.toJSON();
+          state.model = self.notebookProvenance.notebook.model.toJSON();
+          state.modelWorkaround = !state.modelWorkaround;
           return state;
         }
       );
@@ -193,18 +196,18 @@ export class NotebookProvenanceTracker {
 
     console.log("_onCellsChanged");
 
-    console.groupCollapsed('cells changed ->', change.type);
+    // console.groupCollapsed('cells changed ->', change.type);
     console.log(change);
 
     let action;
 
     switch (change.type) {
       case 'add':
-        debugger
+
         action = this.notebookProvenance.prov.addAction(
           "addCell",
           (state:ApplicationState) => {
-            debugger
+
             // @ts-ignore
             state.model = self.notebookProvenance.notebook.model.toJSON();
             state.modelWorkaround = !state.modelWorkaround;
@@ -284,7 +287,7 @@ export class NotebookProvenanceTracker {
     }
 
     // Promise.resolve(this.notebookProvenance.tracker.applyAction(action!, true)); // adds this action to the graph
-    console.groupEnd();
+    // console.groupEnd();
   }
 
 }

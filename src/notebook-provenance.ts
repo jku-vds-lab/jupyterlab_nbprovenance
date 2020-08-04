@@ -154,7 +154,7 @@ export class NotebookProvenance {
       // provVisUpdate()
       // console.log(this.prov.graph())
       console.log("model observer called");
-      debugger
+
       this.pauseTracking = true;
       let preserveCellIndex = this.notebook.activeCellIndex;
       // @ts-ignore
@@ -170,7 +170,7 @@ export class NotebookProvenance {
     });
 
     this.prov.addObserver(["activeCell"], () => {
-      debugger
+
       // provVisUpdate()
       // console.log(this.prov.graph())
       console.log("activeCell observer called");
