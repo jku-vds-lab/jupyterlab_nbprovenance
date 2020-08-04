@@ -42,33 +42,26 @@ import
 import * as d3 from "d3"
 
 
-// import {
-//     // ProvVis,
-//     // EventConfig,
-//     // Config,
-//     // ProvVisConfig,
-//     ProvVisCreator
-// } from "@visdesignlab/trrack-vis";
+import {
+    // ProvVis,
+    // EventConfig,
+    // Config,
+    // ProvVisConfig,
+    ProvVisCreator
+} from "@visdesignlab/trrack-vis";
 
 
 
-// Create function to pass to the ProvVis library for when a node is selected in the graph.
-// For our purposes, were simply going to jump to the selected node.
-let visCallback = function(newNode: NodeID) {
-    // prov.goToNode(newNode);
-
-    // Incase the state doesn't change and the observers arent called, updating the ProvVis here.
-    // provVisUpdate();
-};
 
 
+let notebookProvenance: NotebookProvenance | null;
 
 /**
  * The main view for the notebook provenance.
  */
 export class SideBar extends Widget {
 
-    private notebookProvenance: NotebookProvenance | null = null;
+    // private notebookProvenance: NotebookProvenance | null = null;
 
     constructor(shell: LabShell, nbTracker: INotebookTracker) {
         super();
@@ -81,11 +74,25 @@ export class SideBar extends Widget {
                 // update provenance information only for the current widget
                 if (shell.currentWidget instanceof NotebookPanel && nbPanel === shell.currentWidget) {
                     const notebook: Notebook = nbPanel.content;
-                    this.notebookProvenance = (notebookModelCache.has(notebook)) ? notebookModelCache.get(notebook)! : null;
+                    notebookProvenance = (notebookModelCache.has(notebook)) ? notebookModelCache.get(notebook)! : null;
                     this.update();
                 }
             });
         });
+
+
+        // shell.currentChanged.connect((shell: LabShell) => {
+        //     const currentWidget = shell.currentWidget;
+        //     if (currentWidget === null || (currentWidget instanceof NotebookPanel) === false) {
+        //         notebookProvenance = null;
+        //         this.update();
+        //         return;
+        //     }
+        //
+        //     const notebook: Notebook = (currentWidget as NotebookPanel).content;
+        //     notebookProvenance = (notebookModelCache.has(notebook)) ? notebookModelCache.get(notebook)! : null;
+        //     this.update();
+        // });
 
         // Add a summary element to the panel
         this.summary = document.createElement("p");
@@ -95,11 +102,6 @@ export class SideBar extends Widget {
         this.provtree = document.createElement("div");
         this.provtree.id = "ProvDiv";
         this.node.appendChild(this.provtree);
-
-        this.summary.innerText = "wert ";
-        //somehow, d3 doesn't do anything if I write it here
-
-        // provVisUpdate();
     }
 
     /**
@@ -116,35 +118,53 @@ export class SideBar extends Widget {
      * Handle update requests for the widget.
      */
     async onUpdateRequest(msg: Message): Promise<void> {
-
+        debugger
+        // @ts-ignore
+        this.summary.innerText = "Provenance of " + (notebookProvenance.notebook.parent! as NotebookPanel).context.path;
+        // @ts-ignore
+        provVisUpdate(notebookProvenance.prov);
     }
-
-    /**
-     * Called after the widget is attached to the DOM
-     *
-     * Make sure the widget is rendered, even if the model has not changed.
-     */
-    protected onAfterAttach(msg: Message): void {
-        d3.select("#ProvDiv")
-          .append("button")
-          .text("undo")
-          .on("click", () => {
-              debugger
-              // @ts-ignore
-              this.notebookProvenance.prov.goBackOneStep();
-          });
-        this.update();
-        // provVisUpdate();
-    }
+    // /**
+    //  * Called after the widget is attached to the DOM
+    //  *
+    //  * Make sure the widget is rendered, even if the model has not changed.
+    //  */
+    // protected onAfterAttach(msg: Message): void {
+    //     // d3.select("#ProvDiv")
+    //     //   .append("button")
+    //     //   .text("undo")
+    //     //   .on("click", () => {
+    //     //       // @ts-ignore
+    //     //       this.notebookProvenance.prov.goBackOneStep();
+    //     //   });
+    //     // this.update();
+    //     // @ts-ignore
+    //     // provVisUpdate(notebookProvenance.prov);
+    // }
 }
 
-
-function provVisUpdate() {
-    document.getElementById("ProvDiv")!;
-    console.log("UPDATING THE VISUALIZATION");
+// Create function to pass to the ProvVis library for when a node is selected in the graph.
+// For our purposes, were simply going to jump to the selected node.
+let visCallback = function(newNode: NodeID) {
     debugger
-    // ProvVisCreator(
-    //   document.getElementById("ProvDiv")!,
-    //   this.notebookProvenance.prov,
-    //   visCallback);
+    // @ts-ignore
+    notebookProvenance.prov.goToNode(newNode);
+    // Incase the state doesn't change and the observers arent called, updating the ProvVis here.
+    // @ts-ignore
+    provVisUpdate(notebookProvenance.prov);
+};
+
+export function provVisUpdate(prov: Provenance<unknown, string, unknown>) {
+    console.log("UPDATING THE VISUALIZATION");
+    ProvVisCreator(
+      document.getElementById("ProvDiv")!,
+      prov,
+      visCallback);
 }
+
+
+
+
+
+
+

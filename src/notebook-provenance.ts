@@ -40,10 +40,11 @@ import {
 
 
 import {NotebookProvenanceTracker} from './provenance-tracker'
+import {provVisUpdate} from "./side-bar";
 // import {initProvenance} from "@visdesignlab/trrack";
 // import Provenance from "@visdesignlab/trrack/src/Interfaces/Provenance";
 
-// import { parse } from 'circular-json';
+import { parse } from 'circular-json';
 
 
 /**
@@ -51,6 +52,7 @@ import {NotebookProvenanceTracker} from './provenance-tracker'
  */
 export interface ApplicationState {
   model: Object;
+  modelWorkaround: boolean;
   activeCell: number;
 };
 
@@ -66,7 +68,8 @@ export interface ApplicationExtra {
 
 const initialState: ApplicationState = {
   model: {},
-  activeCell: 0
+  activeCell: 0,
+  modelWorkaround: true
 }
 
 export type EventTypes = "changeActiveCell" | "executeCell" | "addCell" | "removeCell" | "moveCell" | "setCell";
@@ -126,7 +129,7 @@ export class NotebookProvenance {
 
 
 
-    debugger
+
     // to check if it loaded: this.prov.graph()
     console.log("Graph at beginning:", this.prov.graph())
 
@@ -143,34 +146,38 @@ export class NotebookProvenance {
     //     // dynamically register all functions from the ActionFunctions class/object
     //     this._registry.register(name, (this._actionFunctions as any)[name], this._actionFunctions);
     //     // dynamically add all functions from the ActionFunctions as observers to the prov
-    //     debugger
+    //
     //     this.prov.addObserver([name], (this._actionFunctions as any)[name]);
     //   });
 
-    this.prov.addObserver(["model"], () => {
+    this.prov.addObserver(["modelWorkaround"], () => {
       // provVisUpdate()
-      console.log(this.prov.graph())
-      debugger
+      // console.log(this.prov.graph())
       console.log("model observer called");
-      this.pauseTracking = true;
-      // @ts-ignore
-      this.notebook.model.fromJSON(this.prov.current().getState().model);
-      this.pauseTracking = false;
       debugger
+      this.pauseTracking = true;
+      let preserveCellIndex = this.notebook.activeCellIndex;
+      // @ts-ignore
+      this.notebook.model.fromJSON(this.prov.current().getState().model); //This takes a LOT of time
+      this.notebook.activeCellIndex = preserveCellIndex;
+      // let cells = parse(this.prov.current().getState().model);
+      // @ts-ignore
+      // this.notebook.model.cells.set(parse(this.prov.current().getState().model));
+      // this.saveProvenanceGraph();
+      this.pauseTracking = false;
+      provVisUpdate(this._prov);
 
-      this.saveProvenanceGraph();
     });
 
     this.prov.addObserver(["activeCell"], () => {
+      debugger
       // provVisUpdate()
-      console.log(this.prov.graph())
+      // console.log(this.prov.graph())
       console.log("activeCell observer called");
       this.pauseTracking = true;
-      this._actionFunctions.changeActiveCell(this.prov.current().getState().activeCell)
+      this._actionFunctions.changeActiveCell(this.prov.current().getState().activeCell);
+      provVisUpdate(this._prov);
       this.pauseTracking = false;
-
-      let saveProvGraph = this._prov.exportProvenanceGraph();
-      debugger
     });
 
     // Call this when all the observers are defined.
@@ -182,10 +189,7 @@ export class NotebookProvenance {
   }
 
   protected saveProvenanceGraph() {
-    debugger
-    // @ts-ignore
     this.notebook.model!.metadata.set('provenance', this._prov.exportProvenanceGraph());
-    // console.log('node added to graph', node);
   }
 
   public get traverser(): IProvenanceGraphTraverser {

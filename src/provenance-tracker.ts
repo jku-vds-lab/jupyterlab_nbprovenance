@@ -5,7 +5,7 @@ import { ICellModel, Cell } from '@jupyterlab/cells';
 import {ApplicationExtra, ApplicationState, EventTypes, NotebookProvenance} from './notebook-provenance';
 import { toArray } from '@lumino/algorithm';
 import {ActionFunction} from "@visdesignlab/trrack";
-// import { stringify } from 'circular-json';
+import { stringify } from 'circular-json';
 
 /**
  * A notebook widget extension that adds a button to the toolbar.
@@ -37,6 +37,7 @@ export class NotebookProvenanceTracker {
 
   trackActiveCell(): any {
     console.log("trackActiveCell");
+    const self = this;
     let prevActiveCellIndex = this.notebookProvenance.notebook.activeCellIndex;
     let prevActiveCellValue: string;
     if (this.notebookProvenance.notebook.activeCell) {
@@ -48,62 +49,61 @@ export class NotebookProvenanceTracker {
         return;
       }
 
+      debugger
       const activeCell = notebook.activeCell;
       if (typeof prevActiveCellValue !== 'undefined') {
         // Check if cell has changed
         const cell = notebook.model!.cells.get(prevActiveCellIndex);
         if (cell && prevActiveCellValue !== cell.value.text) {
           // if so add to prov
-          const cellChangedAction = {
-            do: 'cellValue',
-            doArguments: [prevActiveCellIndex, cell.value.text],
-            undo: 'cellValue',
-            undoArguments: [prevActiveCellIndex, prevActiveCellValue]
-          };
-          // Promise.resolve(this.notebookProvenance.tracker.applyAction(cellChangedAction, true)); //hier wird also zuerst die action changeValue ausgeführt, danach erst change active cell
           let action = this.notebookProvenance.prov.addAction(
             cell.value.text,
             (state:ApplicationState) => {
-              state.activeCell = Number(cell.value.text);
+              // state.activeCell = Number(cell.value.text);
+              // @ts-ignore
+              state.model = self.notebookProvenance.notebook.model.toJSON();
+              state.modelWorkaround = !state.modelWorkaround;
               return state;
             }
           )
 
           console.log(action);
 
+          // Promise.resolve(action
+          //   .addEventType("changeActiveCell")
+          //   .alwaysStoreState(true)
+          //   .applyAction());
           action
             .addEventType("changeActiveCell")
             .alwaysStoreState(true)
             .applyAction();
         }
+
+
       }
-
-      const legacy_action = {
-        do: 'changeActiveCell',
-        doArguments: [notebook.activeCellIndex],
-        undo: 'changeActiveCell',
-        undoArguments: [prevActiveCellIndex]
-      };
-      console.log(legacy_action);
-
-      // Promise.resolve(this.notebookProvenance.tracker.applyAction(action, true));
 
       let action = this.notebookProvenance.prov.addAction(
         "changeActiveCell to " + String(notebook.activeCellIndex),
         (state:ApplicationState) => {
           state.activeCell = notebook.activeCellIndex;
+          debugger
+          // @ts-ignore
           return state;
         }
       );
 
       console.log(action);
-
+      // Promise.resolve(action
+      //   .addEventType("changeActiveCell")
+      //   .alwaysStoreState(true)
+      //   .applyAction());
       action
         .addEventType("changeActiveCell")
         .alwaysStoreState(true)
         .applyAction();
 
       prevActiveCellIndex = notebook.activeCellIndex;
+      debugger //do this BEFORE applyAction, because after the activeCell will not exist anymore
       if (activeCell) {
         prevActiveCellValue = activeCell.model.value.text;
       }
@@ -115,6 +115,9 @@ export class NotebookProvenanceTracker {
   trackCellExecution(): any {
     const self = this;
     NotebookActions.executed.connect((_dummy, obj: { notebook: Notebook, cell: Cell }) => {
+      if (this.notebookProvenance.pauseTracking) {
+        return;
+      }
       console.log('Cell ran', obj.cell);
       let index = -1;
       // either notebook is missing model sometimes, test both
@@ -155,10 +158,10 @@ export class NotebookProvenanceTracker {
         (state:ApplicationState) => {
           // @ts-ignore
           // state.cells = stringify(self.notebookProvenance.notebook.model.cells);
-          debugger
+
           // @ts-ignore
           // state.cells = self.notebookProvenance.notebook.model.cells.iter().clone();
-          state.model = self.notebookProvenance.notebook.model.toJSON();
+          state.model = self.notebookProvenance.notebook.model.cells.toJSON();
           return state;
         }
       );
@@ -172,6 +175,7 @@ export class NotebookProvenanceTracker {
 
     }, this);
   }
+
 
   /**
    * Handle a change in the cells list
@@ -193,15 +197,20 @@ export class NotebookProvenanceTracker {
     console.log(change);
 
     let action;
-    debugger
+
     switch (change.type) {
       case 'add':
+        debugger
         action = this.notebookProvenance.prov.addAction(
           "addCell",
           (state:ApplicationState) => {
             debugger
             // @ts-ignore
             state.model = self.notebookProvenance.notebook.model.toJSON();
+            state.modelWorkaround = !state.modelWorkaround;
+            // state.model = stringify(self.notebookProvenance.notebook.model.cells);
+            // @ts-ignore
+            // state.model = JSON.stringify(self.notebookProvenance.notebook.model.cells, refReplacer());
             return state;
           }
         );
@@ -217,9 +226,10 @@ export class NotebookProvenanceTracker {
         action = this.notebookProvenance.prov.addAction(
           "removeCell",
           (state:ApplicationState) => {
-            debugger
+
             // @ts-ignore
             state.model = self.notebookProvenance.notebook.model.toJSON();
+            state.modelWorkaround = !state.modelWorkaround;
             return state;
           }
         );
@@ -235,9 +245,10 @@ export class NotebookProvenanceTracker {
         action = this.notebookProvenance.prov.addAction(
           "moveCell",
           (state:ApplicationState) => {
-            debugger
+
             // @ts-ignore
             state.model = self.notebookProvenance.notebook.model.toJSON();
+            state.modelWorkaround = !state.modelWorkaround;
             return state;
           }
         );
@@ -253,9 +264,10 @@ export class NotebookProvenanceTracker {
         action = this.notebookProvenance.prov.addAction(
           "setCell",
           (state:ApplicationState) => {
-            debugger
+
             // @ts-ignore
             state.model = self.notebookProvenance.notebook.model.toJSON();
+            state.modelWorkaround = !state.modelWorkaround;
             return state;
           }
         );
@@ -334,3 +346,26 @@ export function findAction(actionName: string, args: any) {
   // }
   // return action;
 }
+
+function refReplacer() {
+  let m = new Map();
+  let v = new Map();
+  var replacer: { (field: any, value: any): any; call?: any; };
+  replacer = (field,value) => value;
+
+  return function(field: string, value: any) {
+    let p= m.get(this) + (Array.isArray(this) ? `[${field}]` : '.' + field);
+    let isComplex= value===Object(value)
+
+    if (isComplex) m.set(value, p);
+
+    let pp = v.get(value)||'';
+    let path = p.replace(/undefined\.\.?/,'');
+    let val = pp ? `#REF:${pp[0]=='[' ? '$':'$.'}${pp}` : value;
+
+    if(!pp && isComplex) v.set(value, path);
+
+    return replacer.call(this, field, val)
+  }
+}
+
