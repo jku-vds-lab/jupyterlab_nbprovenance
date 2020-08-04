@@ -13,7 +13,7 @@ import {
   // SerializedProvenanceGraph // type
 } from '@visualstorytelling/provenance-core';
 import {JupyterLab} from '@jupyterlab/application';
-import {Notebook} from '@jupyterlab/notebook';
+import {Notebook, NotebookModel} from '@jupyterlab/notebook';
 import {ActionFunctions} from './action-functions';
 // import { NotebookProvenanceTracker } from './provenance-tracker';
 import {ISessionContext} from '@jupyterlab/apputils';
@@ -92,6 +92,7 @@ export class NotebookProvenance {
 
   // instad of actionFunctions.pauseTracking just use a field here
   public pauseTracking: boolean = false;
+  public pauseObserverExecution: boolean = false;
 
   // private _prov: string;
 
@@ -155,14 +156,52 @@ export class NotebookProvenance {
       // console.log(this.prov.graph())
       console.log("model observer called");
 
+      debugger
+
       this.pauseTracking = true;
-      let preserveCellIndex = this.notebook.activeCellIndex;
+      // let preserveCellIndex = this.notebook.activeCellIndex;
+
+
+      // Tried to fix problem with runAndAdvance:
+      // // @ts-ignore
+      // let preserveModel = new NotebookModel();
+      // // @ts-ignore
+      // // let preserveNotebook = new Notebook();
+      // // @ts-ignore
+      // preserveModel.fromJSON(this.prov.current().getState().model); //get everything
+      // // @ts-ignore
+      // this.notebook.model.cells.dispose()
+      // // @ts-ignore
+      // this.notebook.model.cells.pushAll(preserveModel.cells);
+
+
+
+      // console.log(this.notebook);
+
+      if(!this.pauseObserverExecution){
+        // @ts-ignore
+        this.notebook.model.fromJSON(this.prov.current().getState().model); //This takes a LOT of time I think?
+      }
+
+
+
+      // console.log(this.notebook);
+
+
+
+      // // @ts-ignore
+      // this.notebook.model = Object.assign(preserveModel);
       // @ts-ignore
-      this.notebook.model.fromJSON(this.prov.current().getState().model); //This takes a LOT of time
-      this.notebook.activeCellIndex = preserveCellIndex;
+      // this.notebook.model.cells.dispose()
+      // @ts-ignore
+      // this.notebook.model.cells.push(preserveModel.cells);
+
       // let cells = parse(this.prov.current().getState().model);
       // @ts-ignore
       // this.notebook.model.cells.set(parse(this.prov.current().getState().model));
+
+
+      // this.notebook.activeCellIndex = preserveCellIndex;
       // this.saveProvenanceGraph();
       this.pauseTracking = false;
       provVisUpdate(this._prov);
@@ -170,6 +209,7 @@ export class NotebookProvenance {
     });
 
     this.prov.addObserver(["activeCell"], () => {
+      debugger
 
       // provVisUpdate()
       // console.log(this.prov.graph())

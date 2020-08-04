@@ -49,7 +49,7 @@ export class NotebookProvenanceTracker {
       }
       console.log("activeCellChanged");
 
-
+      
       // @ts-ignore
       const activeCell = notebook.activeCell.model.value.text;
       if (typeof prevActiveCellValue !== 'undefined') {
@@ -75,10 +75,12 @@ export class NotebookProvenanceTracker {
           //   .addEventType("changeActiveCell")
           //   .alwaysStoreState(true)
           //   .applyAction());
+          this.notebookProvenance.pauseObserverExecution = true;
           action
             .addEventType("changeActiveCell")
             .alwaysStoreState(true)
             .applyAction();
+          this.notebookProvenance.pauseObserverExecution = false;
         }
       }
 
@@ -171,10 +173,12 @@ export class NotebookProvenanceTracker {
 
       console.log(action);
 
+      this.notebookProvenance.pauseObserverExecution = true;
       action
         .addEventType("executeCell")
         .alwaysStoreState(true)
         .applyAction();
+      this.notebookProvenance.pauseObserverExecution = false;
 
     }, this);
   }
@@ -219,11 +223,12 @@ export class NotebookProvenanceTracker {
         );
 
         console.log(action);
-
+        this.notebookProvenance.pauseObserverExecution = true;
         action
           .addEventType("addCell")
           .alwaysStoreState(true)
           .applyAction();
+        this.notebookProvenance.pauseObserverExecution = false;
         break;
       case 'remove':
         action = this.notebookProvenance.prov.addAction(
@@ -238,11 +243,12 @@ export class NotebookProvenanceTracker {
         );
 
         console.log(action);
-
+        this.notebookProvenance.pauseObserverExecution = true;
         action
           .addEventType("removeCell")
           .alwaysStoreState(true)
           .applyAction();
+        this.notebookProvenance.pauseObserverExecution = false;
         break;
       case 'move':
         action = this.notebookProvenance.prov.addAction(
@@ -257,11 +263,12 @@ export class NotebookProvenanceTracker {
         );
 
         console.log(action);
-
+        this.notebookProvenance.pauseObserverExecution = true;
         action
           .addEventType("moveCell")
           .alwaysStoreState(true)
           .applyAction();
+        this.notebookProvenance.pauseObserverExecution = false;
         break;
       case 'set': // caused by, e.g., change cell type
         action = this.notebookProvenance.prov.addAction(
@@ -276,11 +283,12 @@ export class NotebookProvenanceTracker {
         );
 
         console.log(action);
-
+        this.notebookProvenance.pauseObserverExecution = true;
         action
           .addEventType("setCell")
           .alwaysStoreState(true)
           .applyAction();
+        this.notebookProvenance.pauseObserverExecution = false;
         break;
       default:
         return;
