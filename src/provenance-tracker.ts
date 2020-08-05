@@ -40,9 +40,6 @@ export class NotebookProvenanceTracker {
     const self = this;
     let prevActiveCellIndex = this.notebookProvenance.notebook.activeCellIndex;
     let prevActiveCellValue: string;
-    // if (this.notebookProvenance.notebook.activeCell) {
-    //   prevActiveCellValue = this.notebookProvenance.notebook.activeCell.model.value.text;
-    // }
     const activeCellChangedListener = (notebook: Notebook) => {
       if (this.notebookProvenance.pauseTracking) {
         return;

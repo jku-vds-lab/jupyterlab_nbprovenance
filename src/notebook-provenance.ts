@@ -215,7 +215,11 @@ export class NotebookProvenance {
       // console.log(this.prov.graph())
       console.log("activeCell observer called");
       this.pauseTracking = true;
-      this._actionFunctions.changeActiveCell(this.prov.current().getState().activeCell);
+      if(!this.pauseObserverExecution){
+        // @ts-ignore
+        this.notebook.model.fromJSON(this.prov.current().getState().model); //This is needed because otherwise sometimes when clicking on "addCell" won't change the state of the notebook
+        this._actionFunctions.changeActiveCell(this.prov.current().getState().activeCell);
+      }
       provVisUpdate(this._prov);
       this.pauseTracking = false;
     });
