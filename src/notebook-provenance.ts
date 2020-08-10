@@ -1,21 +1,6 @@
-import {
-  ProvenanceGraph, // class
-  ProvenanceNode, // type
-  ProvenanceGraphTraverser, // class
-  IProvenanceGraphTraverser, // interface
-  IProvenanceGraph, // interface
-  ActionFunctionRegistry, // class
-  IActionFunctionRegistry, // interface
-  IProvenanceTracker, // interface
-  ProvenanceTracker, // class
-  serializeProvenanceGraph, // function
-  // restoreProvenanceGraph, // function
-  // SerializedProvenanceGraph // type
-} from '@visualstorytelling/provenance-core';
 import {JupyterLab} from '@jupyterlab/application';
 import {Notebook, NotebookModel} from '@jupyterlab/notebook';
 import {ActionFunctions} from './action-functions';
-// import { NotebookProvenanceTracker } from './provenance-tracker';
 import {ISessionContext} from '@jupyterlab/apputils';
 import {sessionContextDialogs} from '@jupyterlab/apputils';
 
@@ -38,20 +23,17 @@ import {
   Extra
 } from '@visdesignlab/trrack';
 
-
 import {NotebookProvenanceTracker} from './provenance-tracker'
 import {provVisUpdate} from "./side-bar";
-// import {initProvenance} from "@visdesignlab/trrack";
-// import Provenance from "@visdesignlab/trrack/src/Interfaces/Provenance";
 
-import { parse } from 'circular-json';
+import {PartialJSONValue} from '@lumino/coreutils'
 
 
 /**
  * interface representing the state of the application
  */
 export interface ApplicationState {
-  model: Object;
+  model: PartialJSONValue;
   modelWorkaround: boolean;
   activeCell: number;
 };
@@ -79,11 +61,7 @@ export type EventTypes = "changeActiveCell" | "executeCell" | "addCell" | "remov
  * Model for a provenance graph.
  */
 export class NotebookProvenance {
-  private _traverser: IProvenanceGraphTraverser;
-  private _registry: IActionFunctionRegistry;
-
   private _actionFunctions: ActionFunctions;
-  private _tracker: IProvenanceTracker;
   private _nbtracker: NotebookProvenanceTracker;
 
 
@@ -134,7 +112,6 @@ export class NotebookProvenance {
     // to check if it loaded: this.prov.graph()
     console.log("Graph at beginning:", this.prov.graph())
 
-    this._registry = new ActionFunctionRegistry();
     this._actionFunctions = new ActionFunctions(this.notebook, this.sessionContext);
 
 
@@ -236,14 +213,6 @@ export class NotebookProvenance {
     this.notebook.model!.metadata.set('provenance', this._prov.exportProvenanceGraph());
   }
 
-  public get traverser(): IProvenanceGraphTraverser {
-    return this._traverser;
-  }
-
-  public get tracker(): IProvenanceTracker {
-    return this._tracker;
-  }
-
   public get nbtracker(): NotebookProvenanceTracker {
     return this._nbtracker;
   }
@@ -258,7 +227,4 @@ export class NotebookProvenance {
   //     return this._graph as ProvenanceGraph;
   // }
 
-  public get registry(): IActionFunctionRegistry {
-    return this._registry;
-  }
 }

@@ -1,11 +1,9 @@
 import { Notebook, NotebookActions } from '@jupyterlab/notebook';
-// import { Action, ReversibleAction, IrreversibleAction } from '@visualstorytelling/provenance-core';
 import { IObservableList } from '@jupyterlab/observables';
 import { ICellModel, Cell } from '@jupyterlab/cells';
 import {ApplicationExtra, ApplicationState, EventTypes, NotebookProvenance} from './notebook-provenance';
 import { toArray } from '@lumino/algorithm';
 import {ActionFunction} from "@visdesignlab/trrack";
-import { stringify } from 'circular-json';
 
 /**
  * A notebook widget extension that adds a button to the toolbar.
@@ -96,10 +94,12 @@ export class NotebookProvenanceTracker {
       //   .addEventType("changeActiveCell")
       //   .alwaysStoreState(true)
       //   .applyAction());
+      this.notebookProvenance.pauseObserverExecution = true;
       action
         .addEventType("changeActiveCell")
         .alwaysStoreState(true)
         .applyAction();
+      this.notebookProvenance.pauseObserverExecution = false;
 
       // the prevActiveCellIndex is used to find the cell that has last been active
       // the prevActiveCellValue is used to store the value of the newly clicked cell --> stores the value before potentially changing the cell value
@@ -157,12 +157,10 @@ export class NotebookProvenanceTracker {
       let action = this.notebookProvenance.prov.addAction(
         "executeCell",
         (state:ApplicationState) => {
-          // @ts-ignore
-          // state.cells = stringify(self.notebookProvenance.notebook.model.cells);
-
-          // @ts-ignore
-          // state.cells = self.notebookProvenance.notebook.model.cells.iter().clone();
-          state.model = self.notebookProvenance.notebook.model.toJSON();
+          debugger
+          if(self.notebookProvenance.notebook.model != null){
+            state.model = self.notebookProvenance.notebook.model.toJSON();
+          }
           state.modelWorkaround = !state.modelWorkaround;
           return state;
         }

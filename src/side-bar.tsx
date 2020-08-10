@@ -3,17 +3,14 @@
 // import * as React from 'react';
 // import * as ReactDOM from 'react-dom';
 import { NotebookProvenance } from './notebook-provenance';
-// import { ProvenanceTreeVisualizationReact } from '@visualstorytelling/provenance-tree-visualization-react';
 import { LabShell } from "@jupyterlab/application";
 import { NotebookPanel, Notebook, INotebookTracker } from '@jupyterlab/notebook';
 import { notebookModelCache } from '.';
 import { Widget } from "@lumino/widgets";
 import { Message } from "@lumino/messaging";
 import "./action-listener";
-// import { ProvenanceGraphTraverser } from '@visualstorytelling/provenance-core';
-
 import "../style/side-bar.css";
-// import {initProvenance} from '@visdesignlab/trrack/src';
+
 
 
 import
@@ -35,12 +32,6 @@ import
     Artifacts,
     Extra
 } from "@visdesignlab/trrack";
-
-// import Scatterplot from "./scatterplot"
-
-// import ReactDOM from 'react-dom'
-import * as d3 from "d3"
-
 
 import {
     // ProvVis,
