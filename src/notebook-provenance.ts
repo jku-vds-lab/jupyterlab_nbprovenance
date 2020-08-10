@@ -1,5 +1,5 @@
 import {JupyterLab} from '@jupyterlab/application';
-import {Notebook, NotebookModel} from '@jupyterlab/notebook';
+import {INotebookModel, Notebook, NotebookModel} from '@jupyterlab/notebook';
 import {ActionFunctions} from './action-functions';
 import {ISessionContext} from '@jupyterlab/apputils';
 import {sessionContextDialogs} from '@jupyterlab/apputils';
@@ -26,7 +26,10 @@ import {
 import {NotebookProvenanceTracker} from './provenance-tracker'
 import {provVisUpdate} from "./side-bar";
 
-import {PartialJSONValue} from '@lumino/coreutils'
+import {PartialJSONValue} from '@lumino/coreutils';
+
+import {DocumentRegistry} from '@jupyterlab/docregistry';
+
 
 
 /**
@@ -64,7 +67,6 @@ export class NotebookProvenance {
   private _actionFunctions: ActionFunctions;
   private _nbtracker: NotebookProvenanceTracker;
 
-
   //initialize provenance with the first state
   private _prov: Provenance<ApplicationState, EventTypes, ApplicationExtra>;
 
@@ -75,11 +77,12 @@ export class NotebookProvenance {
   // private _prov: string;
 
 
-  constructor(private app: JupyterLab, public readonly notebook: Notebook, private sessionContext: ISessionContext) {
-    this.init();
+  // Why is this context not working like app, notebook, sessionContext?
+  constructor(private app: JupyterLab, public readonly notebook: Notebook, private sessionContext: ISessionContext, private context: DocumentRegistry.IContext<INotebookModel>) {
+    this.init(context);
   }
 
-  private init() {
+  private init(context: DocumentRegistry.IContext<INotebookModel>) {
     this._prov = initProvenance<ApplicationState, EventTypes, ApplicationExtra>(initialState, false);
 
 
@@ -94,6 +97,8 @@ export class NotebookProvenance {
     //   measurementId: "G-Z6JK4BJ7KB"
     // });
 
+    context.saveState.connect(this.saveProvenanceGraph,this);
+
 
     if (this.notebook.model!.metadata.has('provenance')) {
       const serGraph = this.notebook.model!.metadata.get('provenance');
@@ -105,6 +110,8 @@ export class NotebookProvenance {
     } else {
       //this._graph = new ProvenanceGraph({ name: 'nbprovenance.default.graph', version: this.app.version });
     }
+
+
 
 
 
@@ -183,6 +190,7 @@ export class NotebookProvenance {
       this.pauseTracking = false;
       provVisUpdate(this._prov);
 
+
     });
 
     this.prov.addObserver(["activeCell"], () => {
@@ -210,6 +218,8 @@ export class NotebookProvenance {
   }
 
   protected saveProvenanceGraph() {
+    console.log("Saving provenance graph in notebookfile");
+    debugger
     this.notebook.model!.metadata.set('provenance', this._prov.exportProvenanceGraph());
   }
 
@@ -221,6 +231,11 @@ export class NotebookProvenance {
     return this._prov;
   }
 
+  // public save() {
+  //   debugger
+  //   console.log("SAVING     SAVING     SAVING");
+  //   // this.notebookModelCache.get(this.notebook)
+  // }
 
 
   // public get graph(): ProvenanceGraph {
