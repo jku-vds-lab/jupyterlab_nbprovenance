@@ -26,11 +26,6 @@ export class NotebookProvenanceTracker {
     this.notebookProvenance.notebook.model!.cells.changed.connect(this._onCellsChanged, this);
 
     this.trackCellExecution();
-
-    // return new DisposableDelegate(() => {
-    //   panel.content.model.cells.changed.disconnect(this._onCellsChanged);
-    //   panel.content.activeCellChanged.disconnect(activeCellChangedListener);
-    // });
   }
 
   trackActiveCell(): any {
@@ -43,10 +38,7 @@ export class NotebookProvenanceTracker {
         return;
       }
       console.log("activeCellChanged");
-
       
-      // @ts-ignore
-      const activeCell = notebook.activeCell.model.value.text;
       if (typeof prevActiveCellValue !== 'undefined') {
         // Check if cell has changed
         const cell = notebook.model!.cells.get(prevActiveCellIndex);
@@ -194,8 +186,6 @@ export class NotebookProvenanceTracker {
     const self = this;
 
     console.log("_onCellsChanged");
-
-    // console.groupCollapsed('cells changed ->', change.type);
     console.log(change);
 
     let action;
@@ -210,9 +200,6 @@ export class NotebookProvenanceTracker {
             // @ts-ignore
             state.model = self.notebookProvenance.notebook.model.toJSON();
             state.modelWorkaround = !state.modelWorkaround;
-            // state.model = stringify(self.notebookProvenance.notebook.model.cells);
-            // @ts-ignore
-            // state.model = JSON.stringify(self.notebookProvenance.notebook.model.cells, refReplacer());
             return state;
           }
         );
@@ -288,90 +275,5 @@ export class NotebookProvenanceTracker {
       default:
         return;
     }
-
-    // Promise.resolve(this.notebookProvenance.tracker.applyAction(action!, true)); // adds this action to the graph
-    // console.groupEnd();
-  }
-
-}
-
-export function findAction(actionName: string, args: any) {
-  // const notebook: Notebook = args[0];
-  // let action: Action;
-  // switch (actionName) {
-  //   case 'enableOutputScrolling':
-  //     action = {
-  //       do: 'enableOutputScrolling',
-  //       doArguments: [notebook.activeCellIndex],
-  //       undo: 'disableOutputScrolling',
-  //       undoArguments: [notebook.activeCellIndex]
-  //     };
-  //     break;
-  //   case 'disableOutputScrolling':
-  //     action = {
-  //       do: 'disableOutputScrolling',
-  //       doArguments: [notebook.activeCellIndex],
-  //       undo: 'enableOutputScrolling',
-  //       undoArguments: [notebook.activeCellIndex]
-  //     };
-  //     break;
-  //   case 'selectAll':
-  //     action = {
-  //       do: 'selectAll',
-  //       doArguments: [],
-  //       undo: 'deselectAll',
-  //       undoArguments: []
-  //     };
-  //     break;
-  //   case 'deselectAll':
-  //     action = {
-  //       do: 'deselectAll',
-  //       doArguments: [],
-  //       undo: 'selectAll',
-  //       undoArguments: []
-  //     };
-  //     break;
-  //   case 'selectAbove':
-  //     action = {
-  //       do: 'selectAbove',
-  //       doArguments: [notebook.activeCellIndex],
-  //       undo: 'deselectAll', // TODO instead of deselectAll the old selection should be stored and restored
-  //       undoArguments: []
-  //     };
-  //     break;
-  //   case 'selectBelow':
-  //     action = {
-  //       do: 'selectBelow',
-  //       doArguments: [notebook.activeCellIndex],
-  //       undo: 'deselectAll', // TODO instead of deselectAll the old selection should be stored and restored
-  //       undoArguments: []
-  //     };
-  //     break;
-  //   default:
-  //     throw new Error('Unknown action name, no compatible provenance action available.');
-  // }
-  // return action;
-}
-
-function refReplacer() {
-  let m = new Map();
-  let v = new Map();
-  var replacer: { (field: any, value: any): any; call?: any; };
-  replacer = (field,value) => value;
-
-  return function(field: string, value: any) {
-    let p= m.get(this) + (Array.isArray(this) ? `[${field}]` : '.' + field);
-    let isComplex= value===Object(value)
-
-    if (isComplex) m.set(value, p);
-
-    let pp = v.get(value)||'';
-    let path = p.replace(/undefined\.\.?/,'');
-    let val = pp ? `#REF:${pp[0]=='[' ? '$':'$.'}${pp}` : value;
-
-    if(!pp && isComplex) v.set(value, path);
-
-    return replacer.call(this, field, val)
   }
 }
-
