@@ -38,11 +38,11 @@ export class NotebookProvenanceTracker {
         return;
       }
       console.log("activeCellChanged");
-      
+
       if (typeof prevActiveCellValue !== 'undefined') {
         // Check if cell has changed
         const cell = notebook.model!.cells.get(prevActiveCellIndex);
-        debugger
+
         if (cell && prevActiveCellValue !== cell.value.text) {
           // if so add to prov
           let action = this.notebookProvenance.prov.addAction(
@@ -149,7 +149,7 @@ export class NotebookProvenanceTracker {
       let action = this.notebookProvenance.prov.addAction(
         "executeCell",
         (state:ApplicationState) => {
-          debugger
+
           if(self.notebookProvenance.notebook.model != null){
             state.model = self.notebookProvenance.notebook.model.toJSON();
           }

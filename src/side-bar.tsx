@@ -85,9 +85,12 @@ export class SideBar extends Widget {
         //     this.update();
         // });
 
-        // Add a summary element to the panel
+        let topBar = document.createElement("div");
+        this.node.appendChild(topBar);
+
+        // Add a summary element to the topBar
         this.summary = document.createElement("p");
-        this.node.appendChild(this.summary);
+        topBar.appendChild(this.summary);
 
         // Add the provenance div
         this.provtree = document.createElement("div");

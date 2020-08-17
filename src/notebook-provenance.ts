@@ -140,7 +140,7 @@ export class NotebookProvenance {
       // console.log(this.prov.graph())
       console.log("model observer called");
 
-      debugger
+
 
       this.pauseTracking = true;
       // let preserveCellIndex = this.notebook.activeCellIndex;
@@ -194,7 +194,7 @@ export class NotebookProvenance {
     });
 
     this.prov.addObserver(["activeCell"], () => {
-      debugger
+
 
       // provVisUpdate()
       // console.log(this.prov.graph())
@@ -219,7 +219,7 @@ export class NotebookProvenance {
 
   protected saveProvenanceGraph() {
     console.log("Saving provenance graph in notebookfile");
-    debugger
+
     this.notebook.model!.metadata.set('provenance', this._prov.exportProvenanceGraph());
   }
 
@@ -232,7 +232,7 @@ export class NotebookProvenance {
   }
 
   // public save() {
-  //   debugger
+  //
   //   console.log("SAVING     SAVING     SAVING");
   //   // this.notebookModelCache.get(this.notebook)
   // }
