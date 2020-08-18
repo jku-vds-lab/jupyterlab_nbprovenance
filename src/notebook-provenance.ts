@@ -43,6 +43,7 @@ export interface ApplicationState {
 
 export interface ApplicationExtra {
   changedCellId: number;
+  relations?: number[]; // Save the position changes. if 0 at index 0, then cell at 0 stays at 0. If 5 at index 0, then the cell has moved from position 0 to position 5 in this event
 };
 
 /**
@@ -163,6 +164,7 @@ export class NotebookProvenance {
       if(!this.pauseObserverExecution){
         // @ts-ignore
         this.notebook.model.fromJSON(this.prov.current().getState().model); //This takes a LOT of time I think?
+        debugger
       }
 
 

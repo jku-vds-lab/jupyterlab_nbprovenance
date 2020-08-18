@@ -218,9 +218,10 @@ export class NotebookProvenanceTracker {
 
         console.log(action);
         this.notebookProvenance.pauseObserverExecution = true;
-
         action
-          .addExtra({changedCellId: change.newIndex})
+          .addExtra({
+            changedCellId: change.newIndex
+          })
           .addEventType("addCell")
           .alwaysStoreState(true)
           .applyAction();
@@ -263,10 +264,48 @@ export class NotebookProvenanceTracker {
           }
         );
 
+        debugger
+        // // @ts-ignore
+        // let cellsIter = self.notebookProvenance.notebook.model.cells.iter();
+        // let cell = cellsIter.next();
+        // while(cell != null){
+        //   console.log(cell);
+        //   cell = cellsIter.next();
+        // }
+
+
+        // @ts-ignore
+        // for(let i=0;i<self.notebookProvenance.notebook.model.cells.length;i++){
+        //
+        // }
+
+        // moved from change.oldIndex to change.newIndex
+        // all in between are changed. If index is decreased(new index < old index), others are increased. If index is increased, others are decreased
+        // @ts-ignore
+        let relations = new Array<number>(self.notebookProvenance.notebook.model.cells.length);
+        // @ts-ignore
+        for(let i=0;i<self.notebookProvenance.notebook.model.cells.length;i++){
+          relations[i] = i;
+        }
+        relations[change.oldIndex] = change.newIndex;
+        if(change.newIndex < change.oldIndex){
+          for(let i=change.newIndex;i<change.oldIndex;i++){
+            relations[i] = i+1;
+          }
+        }else{
+          for(let i=change.oldIndex+1;i<=change.newIndex;i++){
+            relations[i] = i-1;
+          }
+        }
+
+        console.log("Relations:", relations);
         console.log(action);
         this.notebookProvenance.pauseObserverExecution = true;
         action
-          .addExtra({changedCellId: change.newIndex})
+          .addExtra({
+            changedCellId: change.newIndex,
+            relations: relations
+          })
           .addEventType("moveCell")
           .alwaysStoreState(true)
           .applyAction();
