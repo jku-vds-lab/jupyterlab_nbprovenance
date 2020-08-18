@@ -3,17 +3,19 @@ import { IObservableList } from '@jupyterlab/observables';
 import { ICellModel, Cell } from '@jupyterlab/cells';
 import {ApplicationExtra, ApplicationState, EventTypes, NotebookProvenance} from './notebook-provenance';
 import { toArray } from '@lumino/algorithm';
-import {ActionFunction} from "@visdesignlab/trrack";
+import {ActionFunction, Provenance} from "@visdesignlab/trrack";
 
 /**
  * A notebook widget extension that adds a button to the toolbar.
  */
 export class NotebookProvenanceTracker {
+  // private _prevAction: string; //used in executeCell
+  // private _prevPrevAction: string; //used in executeCell
+
   /**
    *
    */
   constructor(private notebookProvenance: NotebookProvenance) {
-
     this.trackActiveCell();
 
     // this.notebookProvenance.notebook.model.contentChanged.connect(() => {
@@ -28,11 +30,12 @@ export class NotebookProvenanceTracker {
     this.trackCellExecution();
   }
 
+
   trackActiveCell(): any {
     console.log("trackActiveCell");
     const self = this;
-    let prevActiveCellIndex = this.notebookProvenance.notebook.activeCellIndex;
     let prevActiveCellValue: string;
+    let prevActiveCellIndex: number;
     const activeCellChangedListener = (notebook: Notebook) => {
       if (this.notebookProvenance.pauseTracking) {
         return;
@@ -64,6 +67,7 @@ export class NotebookProvenanceTracker {
           //   .applyAction());
           this.notebookProvenance.pauseObserverExecution = true;
           action
+            .addExtra({changedCellId: prevActiveCellIndex})
             .addEventType("changeActiveCell")
             .alwaysStoreState(true)
             .applyAction();
@@ -88,10 +92,13 @@ export class NotebookProvenanceTracker {
       //   .applyAction());
       this.notebookProvenance.pauseObserverExecution = true;
       action
+        .addExtra({changedCellId: this.notebookProvenance.notebook.activeCellIndex})
         .addEventType("changeActiveCell")
         .alwaysStoreState(true)
         .applyAction();
       this.notebookProvenance.pauseObserverExecution = false;
+      // this._prevPrevAction = this._prevAction;
+      // this._prevAction = "changeActiveCell";
 
       // the prevActiveCellIndex is used to find the cell that has last been active
       // the prevActiveCellValue is used to store the value of the newly clicked cell --> stores the value before potentially changing the cell value
@@ -111,6 +118,8 @@ export class NotebookProvenanceTracker {
       if (this.notebookProvenance.pauseTracking) {
         return;
       }
+
+
       console.log('Cell ran', obj.cell);
       let index = -1;
       // either notebook is missing model sometimes, test both
@@ -162,10 +171,13 @@ export class NotebookProvenanceTracker {
 
       this.notebookProvenance.pauseObserverExecution = true;
       action
+        .addExtra({changedCellId: index})
         .addEventType("executeCell")
         .alwaysStoreState(true)
         .applyAction();
       this.notebookProvenance.pauseObserverExecution = false;
+      // this._prevPrevAction = this._prevAction;
+      // this._prevAction = "executeCell";
 
     }, this);
   }
@@ -206,11 +218,15 @@ export class NotebookProvenanceTracker {
 
         console.log(action);
         this.notebookProvenance.pauseObserverExecution = true;
+
         action
+          .addExtra({changedCellId: change.newIndex})
           .addEventType("addCell")
           .alwaysStoreState(true)
           .applyAction();
         this.notebookProvenance.pauseObserverExecution = false;
+        // this._prevPrevAction = this._prevAction;
+        // this._prevAction = "addCell";
         break;
       case 'remove':
         action = this.notebookProvenance.prov.addAction(
@@ -227,10 +243,13 @@ export class NotebookProvenanceTracker {
         console.log(action);
         this.notebookProvenance.pauseObserverExecution = true;
         action
+          .addExtra({changedCellId: change.newIndex})
           .addEventType("removeCell")
           .alwaysStoreState(true)
           .applyAction();
         this.notebookProvenance.pauseObserverExecution = false;
+        // this._prevPrevAction = this._prevAction;
+        // this._prevAction = "removeCell";
         break;
       case 'move':
         action = this.notebookProvenance.prov.addAction(
@@ -247,10 +266,13 @@ export class NotebookProvenanceTracker {
         console.log(action);
         this.notebookProvenance.pauseObserverExecution = true;
         action
+          .addExtra({changedCellId: change.newIndex})
           .addEventType("moveCell")
           .alwaysStoreState(true)
           .applyAction();
         this.notebookProvenance.pauseObserverExecution = false;
+        // this._prevPrevAction = this._prevAction;
+        // this._prevAction = "moveCell";
         break;
       case 'set': // caused by, e.g., change cell type
         action = this.notebookProvenance.prov.addAction(
@@ -267,10 +289,13 @@ export class NotebookProvenanceTracker {
         console.log(action);
         this.notebookProvenance.pauseObserverExecution = true;
         action
+          .addExtra({changedCellId: change.newIndex})
           .addEventType("setCell")
           .alwaysStoreState(true)
           .applyAction();
         this.notebookProvenance.pauseObserverExecution = false;
+        // this._prevPrevAction = this._prevAction;
+        // this._prevAction = "setCell";
         break;
       default:
         return;

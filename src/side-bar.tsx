@@ -37,7 +37,7 @@ import {
     // ProvVis,
     // EventConfig,
     // Config,
-    // ProvVisConfig,
+    ProvVisConfig,
     ProvVisCreator
 } from "@visdesignlab/trrack-vis";
 
@@ -149,10 +149,17 @@ let visCallback = function(newNode: NodeID) {
 
 export function provVisUpdate(prov: Provenance<unknown, string, unknown>) {
     // console.log("UPDATING THE VISUALIZATION");
+    let config: ProvVisConfig = {cellsVisArea: 50};
+
     ProvVisCreator(
       document.getElementById("ProvDiv")!,
       prov,
-      visCallback);
+      visCallback,
+      true,
+      false,
+      prov.graph().root,
+      config
+      );
 }
 
 

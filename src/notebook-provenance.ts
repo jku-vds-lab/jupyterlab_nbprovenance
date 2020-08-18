@@ -42,9 +42,7 @@ export interface ApplicationState {
 };
 
 export interface ApplicationExtra {
-  nodeNum: number;
-  nodeX: number;
-  nodeY: number;
+  changedCellId: number;
 };
 
 /**
