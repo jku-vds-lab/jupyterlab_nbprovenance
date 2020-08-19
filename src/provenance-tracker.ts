@@ -95,6 +95,7 @@ export class NotebookProvenanceTracker {
         .addExtra({changedCellId: this.notebookProvenance.notebook.activeCellIndex})
         .addEventType("changeActiveCell")
         .alwaysStoreState(true)
+        .isEphemeral(true)
         .applyAction();
       this.notebookProvenance.pauseObserverExecution = false;
       // this._prevPrevAction = this._prevAction;

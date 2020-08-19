@@ -149,14 +149,16 @@ let visCallback = function(newNode: NodeID) {
 
 export function provVisUpdate(prov: Provenance<unknown, string, unknown>) {
     // console.log("UPDATING THE VISUALIZATION");
-    let config: ProvVisConfig = {cellsVisArea: 50};
+    let config: ProvVisConfig = {
+        cellsVisArea: 50
+    };
 
     ProvVisCreator(
       document.getElementById("ProvDiv")!,
       prov,
       visCallback,
       true,
-      false,
+      true,
       prov.graph().root,
       config
       );
