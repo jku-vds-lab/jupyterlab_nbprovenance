@@ -216,11 +216,23 @@ export class NotebookProvenanceTracker {
           }
         );
 
+
+        // @ts-ignore
+        let relationsAdd = new Array<number>(self.notebookProvenance.notebook.model.cells.length-1);
+        // @ts-ignore
+        for(let i=0;i<self.notebookProvenance.notebook.model.cells.length-1;i++){
+          relationsAdd[i] = i;
+        }
+
+        console.log("Relations:", relationsAdd);
+
+        debugger
         console.log(action);
         this.notebookProvenance.pauseObserverExecution = true;
         action
           .addExtra({
-            changedCellId: change.newIndex
+            changedCellId: change.newIndex,
+            relations: relationsAdd
           })
           .addEventType("addCell")
           .alwaysStoreState(true)
@@ -264,7 +276,6 @@ export class NotebookProvenanceTracker {
           }
         );
 
-        debugger
         // // @ts-ignore
         // let cellsIter = self.notebookProvenance.notebook.model.cells.iter();
         // let cell = cellsIter.next();

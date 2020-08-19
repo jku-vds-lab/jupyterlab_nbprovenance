@@ -164,7 +164,6 @@ export class NotebookProvenance {
       if(!this.pauseObserverExecution){
         // @ts-ignore
         this.notebook.model.fromJSON(this.prov.current().getState().model); //This takes a LOT of time I think?
-        debugger
       }
 
 
