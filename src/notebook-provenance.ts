@@ -56,8 +56,8 @@ const initialState: ApplicationState = {
   modelWorkaround: true
 }
 
-export type EventTypes = "changeActiveCell" | "executeCell" | "addCell" | "removeCell" | "moveCell" | "setCell";
-export const EventTypes = ["changeActiveCell", "executeCell", "addCell", "removeCell", "moveCell", "setCell"];
+export type EventTypes = "changeActiveCell" | "executeCell" | "addCell" | "removeCell" | "moveCell" | "setCell" | "changeCellValue";
+export const EventTypes = ["changeActiveCell", "executeCell", "addCell", "removeCell", "moveCell", "setCell", "changeCellValue"];
 
 
 /**
