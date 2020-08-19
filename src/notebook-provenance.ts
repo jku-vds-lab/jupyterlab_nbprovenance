@@ -110,93 +110,25 @@ export class NotebookProvenance {
       //this._graph = new ProvenanceGraph({ name: 'nbprovenance.default.graph', version: this.app.version });
     }
 
-
-
-
-
-
     // to check if it loaded: this.prov.graph()
     console.log("Graph at beginning:", this.prov.graph())
 
     this._actionFunctions = new ActionFunctions(this.notebook, this.sessionContext);
 
-
-
-    // // get method names from the object (see https://stackoverflow.com/a/48051971)
-    // let actionFunctionNames = Object.getPrototypeOf(this._actionFunctions);
-    // Object.getOwnPropertyNames(actionFunctionNames)
-    //   .filter((d) => d !== 'constructor')
-    //   .map((name: string) => {
-    //     // dynamically register all functions from the ActionFunctions class/object
-    //     this._registry.register(name, (this._actionFunctions as any)[name], this._actionFunctions);
-    //     // dynamically add all functions from the ActionFunctions as observers to the prov
-    //
-    //     this.prov.addObserver([name], (this._actionFunctions as any)[name]);
-    //   });
-
     this.prov.addObserver(["modelWorkaround"], () => {
       // provVisUpdate()
       // console.log(this.prov.graph())
       console.log("model observer called");
-
-
-
       this.pauseTracking = true;
-      // let preserveCellIndex = this.notebook.activeCellIndex;
-
-
-      // Tried to fix problem with runAndAdvance:
-      // // @ts-ignore
-      // let preserveModel = new NotebookModel();
-      // // @ts-ignore
-      // // let preserveNotebook = new Notebook();
-      // // @ts-ignore
-      // preserveModel.fromJSON(this.prov.current().getState().model); //get everything
-      // // @ts-ignore
-      // this.notebook.model.cells.dispose()
-      // // @ts-ignore
-      // this.notebook.model.cells.pushAll(preserveModel.cells);
-
-
-
-      // console.log(this.notebook);
-
       if(!this.pauseObserverExecution){
         // @ts-ignore
         this.notebook.model.fromJSON(this.prov.current().getState().model); //This takes a LOT of time I think?
       }
-
-
-
-      // console.log(this.notebook);
-
-
-
-      // // @ts-ignore
-      // this.notebook.model = Object.assign(preserveModel);
-      // @ts-ignore
-      // this.notebook.model.cells.dispose()
-      // @ts-ignore
-      // this.notebook.model.cells.push(preserveModel.cells);
-
-      // let cells = parse(this.prov.current().getState().model);
-      // @ts-ignore
-      // this.notebook.model.cells.set(parse(this.prov.current().getState().model));
-
-
-      // this.notebook.activeCellIndex = preserveCellIndex;
-      // this.saveProvenanceGraph();
       this.pauseTracking = false;
       provVisUpdate(this._prov);
-
-
     });
 
     this.prov.addObserver(["activeCell"], () => {
-
-
-      // provVisUpdate()
-      // console.log(this.prov.graph())
       console.log("activeCell observer called");
       this.pauseTracking = true;
       if(!this.pauseObserverExecution){

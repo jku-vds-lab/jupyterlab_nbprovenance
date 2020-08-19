@@ -17,16 +17,7 @@ export class NotebookProvenanceTracker {
    */
   constructor(private notebookProvenance: NotebookProvenance) {
     this.trackActiveCell();
-
-    // this.notebookProvenance.notebook.model.contentChanged.connect(() => {
-    //   console.log(['contentChanged', arguments]);
-    // });
-    // fires when which cell is active is changed
-    // this.notebookProvenance.notebook.activeCellChanged.connect(() => {
-    //   console.log(['activeCellChanged', arguments]);
-    // });
     this.notebookProvenance.notebook.model!.cells.changed.connect(this._onCellsChanged, this);
-
     this.trackCellExecution();
   }
 
@@ -218,16 +209,22 @@ export class NotebookProvenanceTracker {
         );
 
 
+        // moved from change.oldIndex to change.newIndex
+        // all in between are changed. If index is decreased(new index < old index), others are increased. If index is increased, others are decreased
         // @ts-ignore
-        let relationsAdd = new Array<number>(self.notebookProvenance.notebook.model.cells.length-1);
+        let length = self.notebookProvenance.notebook.model.cells.length-1;
+        let relationsAdd = new Array<number>(length);
         // @ts-ignore
-        for(let i=0;i<self.notebookProvenance.notebook.model.cells.length-1;i++){
+        for(let i=0;i<length;i++){
           relationsAdd[i] = i;
+        }
+
+        for(let i=change.newIndex;i<length;i++){
+          relationsAdd[i] = i+1;
         }
 
         console.log("Relations:", relationsAdd);
 
-        debugger
         console.log(action);
         this.notebookProvenance.pauseObserverExecution = true;
         action
@@ -276,20 +273,6 @@ export class NotebookProvenanceTracker {
             return state;
           }
         );
-
-        // // @ts-ignore
-        // let cellsIter = self.notebookProvenance.notebook.model.cells.iter();
-        // let cell = cellsIter.next();
-        // while(cell != null){
-        //   console.log(cell);
-        //   cell = cellsIter.next();
-        // }
-
-
-        // @ts-ignore
-        // for(let i=0;i<self.notebookProvenance.notebook.model.cells.length;i++){
-        //
-        // }
 
         // moved from change.oldIndex to change.newIndex
         // all in between are changed. If index is decreased(new index < old index), others are increased. If index is increased, others are decreased
