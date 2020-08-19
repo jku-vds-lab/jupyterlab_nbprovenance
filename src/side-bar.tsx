@@ -2,7 +2,7 @@
 
 // import * as React from 'react';
 // import * as ReactDOM from 'react-dom';
-import { NotebookProvenance } from './notebook-provenance';
+import {EventTypes, NotebookProvenance} from './notebook-provenance';
 import { LabShell } from "@jupyterlab/application";
 import { NotebookPanel, Notebook, INotebookTracker } from '@jupyterlab/notebook';
 import { notebookModelCache } from '.';
@@ -34,12 +34,25 @@ import
 } from "@visdesignlab/trrack";
 
 import {
-    // ProvVis,
-    // EventConfig,
+    ProvVis,
+    EventConfig,
     // Config,
     ProvVisConfig,
     ProvVisCreator
 } from "@visdesignlab/trrack-vis";
+
+import {
+    symbol,
+    symbolCircle,
+    symbolCross,
+    symbolDiamond,
+    symbolSquare,
+    symbolStar,
+    symbolTriangle,
+    symbolWye
+} from "d3-shape";
+import * as React from "react";
+import {style} from "typestyle";
 
 
 
@@ -149,10 +162,17 @@ let visCallback = function(newNode: NodeID) {
 
 export function provVisUpdate(prov: Provenance<unknown, string, unknown>) {
     // console.log("UPDATING THE VISUALIZATION");
+    let eventConfig: EventConfig<any>;
+    eventConfig = createEventConfig(prov);
+
     let config: ProvVisConfig = {
-        cellsVisArea: 50
+        cellsVisArea: 50,
+        eventConfig: eventConfig
     };
 
+
+
+    debugger
     ProvVisCreator(
       document.getElementById("ProvDiv")!,
       prov,
@@ -165,6 +185,73 @@ export function provVisUpdate(prov: Provenance<unknown, string, unknown>) {
 }
 
 
+function createEventConfig<E extends string>(prov: Provenance<unknown, string, unknown>): EventConfig<E> {
+  let symbols = [
+    symbol().type(symbolDiamond), // change
+    symbol().type(symbolCircle),  // execute
+    symbol().type(symbolCross),   // add
+    symbol().type(symbolWye),     // remove
+    symbol().type(symbolTriangle),// move
+    symbol().type(symbolSquare),  // set
+    symbol().type(symbolStar)
+  ];
+
+  debugger
+
+  // Find nodes in the clusters whose entire cluster is on the backbone.
+  let conf: EventConfig<E> = {};
+  let counter = 0;
+
+  for (let j of EventTypes) {
+    conf[j] = {}
+    conf[j].backboneGlyph = (
+      <path
+        strokeWidth={2}
+        className={style({
+          fill: 'white',
+          stroke: 'rgb(88, 22, 22)'
+        })}
+        d={symbols[counter]()!}
+      />
+    )
+
+    conf[j].bundleGlyph = (
+      <path
+        strokeWidth={2}
+        className={style({
+          fill: 'white',
+          stroke: 'rgb(88, 22, 22)'
+        })}
+        d={symbols[counter]()!}
+      />
+    )
+
+    conf[j].currentGlyph = (
+      <path
+        strokeWidth={2}
+        className={style({
+          fill: 'rgb(88, 22, 22)',
+          stroke: 'rgb(88, 22, 22)'
+        })}
+        d={symbols[counter]()!}
+      />
+    )
+
+    conf[j].regularGlyph = (
+      <path
+        strokeWidth={2}
+        className={style({
+          fill: 'white',
+          stroke: 'rgb(88, 22, 22)'
+        })}
+        d={symbols[counter]()!}
+      />
+    )
+
+    counter++;
+  }
+  return conf;
+}
 
 
 

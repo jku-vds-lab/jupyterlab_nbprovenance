@@ -208,6 +208,7 @@ export class NotebookProvenanceTracker {
           }
         );
 
+        debugger
 
         // moved from change.oldIndex to change.newIndex
         // all in between are changed. If index is decreased(new index < old index), others are increased. If index is increased, others are decreased
