@@ -40,6 +40,7 @@ export interface ApplicationState {
   modelWorkaround: number; // only counting up could lead to a problem when working on parallel timelines. Veery rarely though.
   activeCell: number;
   cellValue: string;
+  cellType: string;
 };
 
 export interface ApplicationExtra {
@@ -55,7 +56,8 @@ const initialState: ApplicationState = {
   model: {},
   activeCell: 0,
   modelWorkaround: 0,
-  cellValue: ""
+  cellValue: "",
+  cellType: "code"
 }
 
 export type EventTypes = "Change active cell" | "executeCell" | "addCell" | "removeCell" | "moveCell" | "setCell" | "changeCellValue";
@@ -124,6 +126,7 @@ export class NotebookProvenance {
       console.log("model observer called");
       this.pauseTracking = true;
       if(!this.pauseObserverExecution){
+        this.pauseObserverExecution = true;
         debugger
         let state = this.prov.current().getState();
         // @ts-ignore
@@ -131,6 +134,8 @@ export class NotebookProvenance {
         // @ts-ignore
         this.notebook.model.cells.get(state.activeCell).value.text = state.cellValue;
         this._actionFunctions.changeActiveCell(state.activeCell);
+        this._actionFunctions.setCell(state.activeCell, state.cellType);
+        this.pauseObserverExecution = false;
       }
       this.pauseTracking = false;
       provVisUpdate(this._prov);
@@ -140,6 +145,7 @@ export class NotebookProvenance {
       console.log("activeCell observer called");
       this.pauseTracking = true;
       if(!this.pauseObserverExecution){
+        this.pauseObserverExecution = true;
         debugger
         let state = this.prov.current().getState();
         // @ts-ignore
@@ -147,7 +153,25 @@ export class NotebookProvenance {
         // @ts-ignore
         // this.notebook.model.cells.get(state.activeCell).value.text = state.cellValue;
         this._actionFunctions.changeActiveCell(state.activeCell);
+        this.pauseObserverExecution = false;
       }
+      provVisUpdate(this._prov);
+      this.pauseTracking = false;
+    });
+
+    this.prov.addObserver(["cellType"], () => {
+      console.log("cellType observer called");
+      this.pauseTracking = true;
+      if(!this.pauseObserverExecution){
+        this.pauseObserverExecution = true;
+        debugger
+        let state = this.prov.current().getState();
+        // @ts-ignore
+        // this.notebook.model.cells.get(state.activeCell).type = state.cellType;
+        this._actionFunctions.setCell(state.activeCell, state.cellType);
+        this.pauseObserverExecution = false;
+      }
+
       provVisUpdate(this._prov);
       this.pauseTracking = false;
     });

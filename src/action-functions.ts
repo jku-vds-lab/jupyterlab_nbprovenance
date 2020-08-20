@@ -67,11 +67,10 @@ export class ActionFunctions {
         return null;
     }
 
-    public async setCell(index: number, cell: ICell) {
-        console.log('set cell at index', index, cell);
-
+    public async setCell(index: number, cellType: string) {
+        console.log('set cell at index', index, cellType);
         this.pauseTracking = true;
-        NotebookActions.changeCellType(this.notebook, cell.cell_type as CellType);
+        NotebookActions.changeCellType(this.notebook, cellType as CellType);
         this.pauseTracking = false;
 
         return null;
