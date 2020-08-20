@@ -11,8 +11,10 @@ import {ActionFunction, Provenance} from "@visdesignlab/trrack";
 export class NotebookProvenanceTracker {
   // private _prevAction: string; //used in executeCell
   // private _prevPrevAction: string; //used in executeCell
-  // private _prevActiveCellValue: string;
-  // private _prevActiveCellIndex: number;
+
+  // the initial values are needed because in new notebooks the very first change would not be tracked otherwise
+  private _prevActiveCellValue: string = "";
+  private _prevActiveCellIndex: number = 0;
 
   /**
    *
@@ -28,19 +30,19 @@ export class NotebookProvenanceTracker {
   trackActiveCell(): any {
     console.log("trackActiveCell");
     const self = this;
-    let prevActiveCellValue: string;
-    let prevActiveCellIndex: number;
+    // let prevActiveCellValue: string;
+    // let prevActiveCellIndex: number;
     const activeCellChangedListener = (notebook: Notebook) => {
       if (this.notebookProvenance.pauseTracking) {
         return;
       }
       console.log("activeCellChanged");
 
-      if (typeof prevActiveCellValue !== 'undefined') {
+      if (typeof this._prevActiveCellValue !== 'undefined') {
         // Check if cell has changed
-        const cell = notebook.model!.cells.get(prevActiveCellIndex);
+        const cell = notebook.model!.cells.get(this._prevActiveCellIndex);
 
-        if (cell && prevActiveCellValue !== cell.value.text) {
+        if (cell && this._prevActiveCellValue !== cell.value.text) {
           // if so add to prov
           let action = this.notebookProvenance.prov.addAction(
             "Cell value: "+cell.value.text,
@@ -57,7 +59,7 @@ export class NotebookProvenanceTracker {
 
           this.notebookProvenance.pauseObserverExecution = true;
           action
-            .addExtra({changedCellId: prevActiveCellIndex})
+            .addExtra({changedCellId: this._prevActiveCellIndex})
             .addEventType("changeCellValue")
             .alwaysStoreState(true)
             .applyAction();
@@ -94,9 +96,9 @@ export class NotebookProvenanceTracker {
       // the prevActiveCellIndex is used to find the cell that has last been active
       // the prevActiveCellValue is used to store the value of the newly clicked cell --> stores the value before potentially changing the cell value
       // so the value of the cell of PREVIOUS index is compared with the prevActiveCellVALUE when clicking a new cell
-      prevActiveCellIndex = notebook.activeCellIndex;
+      this._prevActiveCellIndex = notebook.activeCellIndex;
       if (this.notebookProvenance.notebook.activeCell) {
-        prevActiveCellValue = this.notebookProvenance.notebook.activeCell.model.value.text;
+        this._prevActiveCellValue = this.notebookProvenance.notebook.activeCell.model.value.text;
       }
     };
 
@@ -177,8 +179,9 @@ export class NotebookProvenanceTracker {
    * Handle a change in the cells list
    */
   trackCellsChanged(): any {
-    let prevActiveCellValue: string;
-    let prevActiveCellIndex: number;
+    // the initial values are needed because in new notebooks the very first change would not be tracked otherwise
+    // let prevActiveCellValue: string = "";
+    // let prevActiveCellIndex: number = 0;
     const cellsChangedListener = (
       list: IObservableList<ICellModel>,
       change: IObservableList.IChangedArgs<ICellModel>) =>
@@ -187,7 +190,7 @@ export class NotebookProvenanceTracker {
         return;
       }
 
-      debugger
+
       const self = this;
 
       console.log("_onCellsChanged");
@@ -195,28 +198,34 @@ export class NotebookProvenanceTracker {
 
       let action;
 
-      debugger
 
       // @ts-ignore
       // this.notebookProvenance.notebook.model.cells.get(3).value.text
 
-      if (typeof prevActiveCellValue !== 'undefined') {
+      // Track if cell value has been changed before adding e.g. edding a new cell
+      if (typeof this._prevActiveCellValue !== 'undefined') {
         // Check if cell has changed
-        const cell = this.notebookProvenance.notebook.model!.cells.get(prevActiveCellIndex);
+        const cell = this.notebookProvenance.notebook.model!.cells.get(this._prevActiveCellIndex);
 
-        if (cell && prevActiveCellValue !== cell.value.text) {
+        if (cell && this._prevActiveCellValue !== cell.value.text) {
           // if so add to prov
+
+          debugger
+
+          // self.notebookProvenance.notebook.model.cells.get(2).value.text
+
           let action = this.notebookProvenance.prov.addAction(
-            cell.value.text,
+            "Cell value: "+cell.value.text,
             (state:ApplicationState) => {
               // state.activeCell = Number(cell.value.text);
               // @ts-ignore
-              state.model = self.notebookProvenance.notebook.model.toJSON();
+              // state.model = self.notebookProvenance.notebook.model.toJSON();
               state.modelWorkaround = !state.modelWorkaround;
+              // @ts-ignore
+              state.cellValue = self.notebookProvenance.notebook.model.cells.get(this._prevActiveCellIndex).value.text
               return state;
             }
           );
-
           console.log(action);
 
           // Promise.resolve(action
@@ -225,13 +234,21 @@ export class NotebookProvenanceTracker {
           //   .applyAction());
           this.notebookProvenance.pauseObserverExecution = true;
           action
-            .addExtra({changedCellId: prevActiveCellIndex})
-            .addEventType("changeActiveCell")
+            .addExtra({changedCellId: this._prevActiveCellIndex})
+            .addEventType("changeCellValue")
             .alwaysStoreState(true)
             .applyAction();
           this.notebookProvenance.pauseObserverExecution = false;
         }
       }
+
+
+
+
+
+
+
+
 
 
       switch (change.type) {
@@ -376,215 +393,11 @@ export class NotebookProvenanceTracker {
           return;
       }
 
-      prevActiveCellIndex = this.notebookProvenance.notebook.activeCellIndex;
+      this._prevActiveCellIndex = this.notebookProvenance.notebook.activeCellIndex;
       if (this.notebookProvenance.notebook.activeCell) {
-        prevActiveCellValue = this.notebookProvenance.notebook.activeCell.model.value.text;
+        this._prevActiveCellValue = this.notebookProvenance.notebook.activeCell.model.value.text;
       }
     };
     this.notebookProvenance.notebook.model!.cells.changed.connect(cellsChangedListener, this);
   }
-
-
-
-  // private _onCellsChanged(
-  //   list: IObservableList<ICellModel>,
-  //   change: IObservableList.IChangedArgs<ICellModel>
-  // ): void {
-  //   // if (this.notebookProvenance.pauseTracking) {
-  //   //   return;
-  //   // }
-  //   //
-  //   // const self = this;
-  //   //
-  //   // console.log("_onCellsChanged");
-  //   // console.log(change);
-  //   //
-  //   // let action;
-  //   //
-  //   // debugger
-  //   //
-  //   // // @ts-ignore
-  //   // // this.notebookProvenance.notebook.model.cells.get(3).value.text
-  //   //
-  //   // if (typeof this._prevActiveCellValue !== 'undefined') {
-  //   //   // Check if cell has changed
-  //   //   const cell = this.notebookProvenance.notebook.model!.cells.get(this._prevActiveCellIndex);
-  //   //
-  //   //   if (cell && this._prevActiveCellValue !== cell.value.text) {
-  //   //     // if so add to prov
-  //   //     let action = this.notebookProvenance.prov.addAction(
-  //   //       cell.value.text,
-  //   //       (state:ApplicationState) => {
-  //   //         // state.activeCell = Number(cell.value.text);
-  //   //         // @ts-ignore
-  //   //         state.model = self.notebookProvenance.notebook.model.toJSON();
-  //   //         state.modelWorkaround = !state.modelWorkaround;
-  //   //         return state;
-  //   //       }
-  //   //     );
-  //   //
-  //   //     console.log(action);
-  //   //
-  //   //     // Promise.resolve(action
-  //   //     //   .addEventType("changeActiveCell")
-  //   //     //   .alwaysStoreState(true)
-  //   //     //   .applyAction());
-  //   //     this.notebookProvenance.pauseObserverExecution = true;
-  //   //     action
-  //   //       .addExtra({changedCellId: this._prevActiveCellIndex})
-  //   //       .addEventType("changeActiveCell")
-  //   //       .alwaysStoreState(true)
-  //   //       .applyAction();
-  //   //     this.notebookProvenance.pauseObserverExecution = false;
-  //   //   }
-  //   // }
-  //   //
-  //   //
-  //   // switch (change.type) {
-  //   //   case 'add':
-  //   //
-  //   //     action = this.notebookProvenance.prov.addAction(
-  //   //       "addCell",
-  //   //       (state:ApplicationState) => {
-  //   //
-  //   //         // @ts-ignore
-  //   //         state.model = self.notebookProvenance.notebook.model.toJSON();
-  //   //         state.modelWorkaround = !state.modelWorkaround;
-  //   //         return state;
-  //   //       }
-  //   //     );
-  //   //
-  //   //
-  //   //
-  //   //     // moved from change.oldIndex to change.newIndex
-  //   //     // all in between are changed. If index is decreased(new index < old index), others are increased. If index is increased, others are decreased
-  //   //     // @ts-ignore
-  //   //     let length = self.notebookProvenance.notebook.model.cells.length-1;
-  //   //     let relationsAdd = new Array<number>(length);
-  //   //     // @ts-ignore
-  //   //     for(let i=0;i<length;i++){
-  //   //       relationsAdd[i] = i;
-  //   //     }
-  //   //
-  //   //     for(let i=change.newIndex;i<length;i++){
-  //   //       relationsAdd[i] = i+1;
-  //   //     }
-  //   //
-  //   //     console.log("Relations:", relationsAdd);
-  //   //
-  //   //     console.log(action);
-  //   //     this.notebookProvenance.pauseObserverExecution = true;
-  //   //     action
-  //   //       .addExtra({
-  //   //         changedCellId: change.newIndex,
-  //   //         relations: relationsAdd
-  //   //       })
-  //   //       .addEventType("addCell")
-  //   //       .alwaysStoreState(true)
-  //   //       .applyAction();
-  //   //     this.notebookProvenance.pauseObserverExecution = false;
-  //   //     // this._prevPrevAction = this._prevAction;
-  //   //     // this._prevAction = "addCell";
-  //   //     break;
-  //   //   case 'remove':
-  //   //     action = this.notebookProvenance.prov.addAction(
-  //   //       "removeCell",
-  //   //       (state:ApplicationState) => {
-  //   //
-  //   //         // @ts-ignore
-  //   //         state.model = self.notebookProvenance.notebook.model.toJSON();
-  //   //         state.modelWorkaround = !state.modelWorkaround;
-  //   //         return state;
-  //   //       }
-  //   //     );
-  //   //
-  //   //     console.log(action);
-  //   //     this.notebookProvenance.pauseObserverExecution = true;
-  //   //     action
-  //   //       .addExtra({changedCellId: change.newIndex})
-  //   //       .addEventType("removeCell")
-  //   //       .alwaysStoreState(true)
-  //   //       .applyAction();
-  //   //     this.notebookProvenance.pauseObserverExecution = false;
-  //   //     // this._prevPrevAction = this._prevAction;
-  //   //     // this._prevAction = "removeCell";
-  //   //     break;
-  //   //   case 'move':
-  //   //     action = this.notebookProvenance.prov.addAction(
-  //   //       "moveCell",
-  //   //       (state:ApplicationState) => {
-  //   //
-  //   //         // @ts-ignore
-  //   //         state.model = self.notebookProvenance.notebook.model.toJSON();
-  //   //         state.modelWorkaround = !state.modelWorkaround;
-  //   //         return state;
-  //   //       }
-  //   //     );
-  //   //
-  //   //     // moved from change.oldIndex to change.newIndex
-  //   //     // all in between are changed. If index is decreased(new index < old index), others are increased. If index is increased, others are decreased
-  //   //     // @ts-ignore
-  //   //     let relations = new Array<number>(self.notebookProvenance.notebook.model.cells.length);
-  //   //     // @ts-ignore
-  //   //     for(let i=0;i<self.notebookProvenance.notebook.model.cells.length;i++){
-  //   //       relations[i] = i;
-  //   //     }
-  //   //     relations[change.oldIndex] = change.newIndex;
-  //   //     if(change.newIndex < change.oldIndex){
-  //   //       for(let i=change.newIndex;i<change.oldIndex;i++){
-  //   //         relations[i] = i+1;
-  //   //       }
-  //   //     }else{
-  //   //       for(let i=change.oldIndex+1;i<=change.newIndex;i++){
-  //   //         relations[i] = i-1;
-  //   //       }
-  //   //     }
-  //   //
-  //   //     console.log("Relations:", relations);
-  //   //     console.log(action);
-  //   //     this.notebookProvenance.pauseObserverExecution = true;
-  //   //     action
-  //   //       .addExtra({
-  //   //         changedCellId: change.newIndex,
-  //   //         relations: relations
-  //   //       })
-  //   //       .addEventType("moveCell")
-  //   //       .alwaysStoreState(true)
-  //   //       .applyAction();
-  //   //     this.notebookProvenance.pauseObserverExecution = false;
-  //   //     // this._prevPrevAction = this._prevAction;
-  //   //     // this._prevAction = "moveCell";
-  //   //     break;
-  //   //   case 'set': // caused by, e.g., change cell type
-  //   //     action = this.notebookProvenance.prov.addAction(
-  //   //       "setCell",
-  //   //       (state:ApplicationState) => {
-  //   //
-  //   //         // @ts-ignore
-  //   //         state.model = self.notebookProvenance.notebook.model.toJSON();
-  //   //         state.modelWorkaround = !state.modelWorkaround;
-  //   //         return state;
-  //   //       }
-  //   //     );
-  //   //
-  //   //     console.log(action);
-  //   //     this.notebookProvenance.pauseObserverExecution = true;
-  //   //     action
-  //   //       .addExtra({changedCellId: change.newIndex})
-  //   //       .addEventType("setCell")
-  //   //       .alwaysStoreState(true)
-  //   //       .applyAction();
-  //   //     this.notebookProvenance.pauseObserverExecution = false;
-  //   //     // this._prevPrevAction = this._prevAction;
-  //   //     // this._prevAction = "setCell";
-  //   //     break;
-  //   //   default:
-  //   //     return;
-  //   // }
-  //   //
-  //   // this._prevActiveCellIndex = this.notebookProvenance.notebook.activeCellIndex;
-  //   // if (this.notebookProvenance.notebook.activeCell) {
-  //   //   this._prevActiveCellValue = this.notebookProvenance.notebook.activeCell.model.value.text;
-  //   // }
-  // }
 }

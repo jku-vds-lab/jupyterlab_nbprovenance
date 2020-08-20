@@ -39,6 +39,7 @@ export interface ApplicationState {
   model: PartialJSONValue;
   modelWorkaround: boolean;
   activeCell: number;
+  cellValue: string;
 };
 
 export interface ApplicationExtra {
@@ -53,7 +54,8 @@ export interface ApplicationExtra {
 const initialState: ApplicationState = {
   model: {},
   activeCell: 0,
-  modelWorkaround: true
+  modelWorkaround: true,
+  cellValue: ""
 }
 
 export type EventTypes = "changeActiveCell" | "executeCell" | "addCell" | "removeCell" | "moveCell" | "setCell" | "changeCellValue";
@@ -117,29 +119,52 @@ export class NotebookProvenance {
     this._actionFunctions = new ActionFunctions(this.notebook, this.sessionContext);
 
     this.prov.addObserver(["modelWorkaround"], () => {
+      debugger
       // provVisUpdate()
       // console.log(this.prov.graph())
       console.log("model observer called");
       this.pauseTracking = true;
       if(!this.pauseObserverExecution){
+        let state = this.prov.current().getState();
         // @ts-ignore
-        this.notebook.model.fromJSON(this.prov.current().getState().model); //This takes a LOT of time I think?
+        this.notebook.model.fromJSON(state.model); //This takes a LOT of time I think?
+        // @ts-ignore
+        this.notebook.model.cells.get(state.activeCell).value.text = state.cellValue;
       }
       this.pauseTracking = false;
       provVisUpdate(this._prov);
     });
 
     this.prov.addObserver(["activeCell"], () => {
+      debugger
       console.log("activeCell observer called");
       this.pauseTracking = true;
       if(!this.pauseObserverExecution){
+        let state = this.prov.current().getState();
         // @ts-ignore
-        this.notebook.model.fromJSON(this.prov.current().getState().model); //This is needed because otherwise sometimes when clicking on "addCell" won't change the state of the notebook
-        this._actionFunctions.changeActiveCell(this.prov.current().getState().activeCell);
+        this.notebook.model.fromJSON(state.model); // This is needed because otherwise sometimes clicking on "addCell" won't change the state of the notebook
+        this._actionFunctions.changeActiveCell(state.activeCell);
       }
       provVisUpdate(this._prov);
       this.pauseTracking = false;
     });
+
+    // this.prov.addObserver(["cellValue"], () => {
+    //   debugger
+    //   // provVisUpdate()
+    //   // console.log(this.prov.graph())
+    //   console.log("cellValue observer called");
+    //   this.pauseTracking = true;
+    //   if(!this.pauseObserverExecution){
+    //     let state = this.prov.current().getState();
+    //     // @ts-ignore
+    //     this.notebook.model.fromJSON(state.model);
+    //     // @ts-ignore
+    //     this.notebook.model.cells.get(state.activeCell).value.text = state.cellValue;
+    //   }
+    //   this.pauseTracking = false;
+    //   provVisUpdate(this._prov);
+    // });
 
     // Call this when all the observers are defined.
     // This is optional and only used when you want to enable sharing and loading states from URL.

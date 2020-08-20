@@ -56,8 +56,6 @@ import {style} from "typestyle";
 
 
 
-
-
 let notebookProvenance: NotebookProvenance | null;
 
 /**
