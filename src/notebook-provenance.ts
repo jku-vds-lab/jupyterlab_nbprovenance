@@ -37,7 +37,7 @@ import {DocumentRegistry} from '@jupyterlab/docregistry';
  */
 export interface ApplicationState {
   model: PartialJSONValue;
-  modelWorkaround: boolean;
+  modelWorkaround: number; // only counting up could lead to a problem when working on parallel timelines. Veery rarely though.
   activeCell: number;
   cellValue: string;
 };
@@ -54,12 +54,12 @@ export interface ApplicationExtra {
 const initialState: ApplicationState = {
   model: {},
   activeCell: 0,
-  modelWorkaround: true,
+  modelWorkaround: 0,
   cellValue: ""
 }
 
-export type EventTypes = "changeActiveCell" | "executeCell" | "addCell" | "removeCell" | "moveCell" | "setCell" | "changeCellValue";
-export const EventTypes = ["changeActiveCell", "executeCell", "addCell", "removeCell", "moveCell", "setCell", "changeCellValue"];
+export type EventTypes = "Change active cell" | "executeCell" | "addCell" | "removeCell" | "moveCell" | "setCell" | "changeCellValue";
+export const EventTypes = ["Change active cell", "executeCell", "addCell", "removeCell", "moveCell", "setCell", "changeCellValue"];
 
 
 /**
@@ -119,30 +119,33 @@ export class NotebookProvenance {
     this._actionFunctions = new ActionFunctions(this.notebook, this.sessionContext);
 
     this.prov.addObserver(["modelWorkaround"], () => {
-      debugger
       // provVisUpdate()
       // console.log(this.prov.graph())
       console.log("model observer called");
       this.pauseTracking = true;
       if(!this.pauseObserverExecution){
+        debugger
         let state = this.prov.current().getState();
         // @ts-ignore
         this.notebook.model.fromJSON(state.model); //This takes a LOT of time I think?
         // @ts-ignore
         this.notebook.model.cells.get(state.activeCell).value.text = state.cellValue;
+        this._actionFunctions.changeActiveCell(state.activeCell);
       }
       this.pauseTracking = false;
       provVisUpdate(this._prov);
     });
 
     this.prov.addObserver(["activeCell"], () => {
-      debugger
       console.log("activeCell observer called");
       this.pauseTracking = true;
       if(!this.pauseObserverExecution){
+        debugger
         let state = this.prov.current().getState();
         // @ts-ignore
-        this.notebook.model.fromJSON(state.model); // This is needed because otherwise sometimes clicking on "addCell" won't change the state of the notebook
+        //this.notebook.model.fromJSON(state.model); // This is needed because otherwise sometimes clicking on "addCell" won't change the state of the notebook
+        // @ts-ignore
+        // this.notebook.model.cells.get(state.activeCell).value.text = state.cellValue;
         this._actionFunctions.changeActiveCell(state.activeCell);
       }
       provVisUpdate(this._prov);
