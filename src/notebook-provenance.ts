@@ -126,7 +126,6 @@ export class NotebookProvenance {
       console.log("model observer called");
       this.pauseTracking = true;
       if(!this.pauseObserverExecution){
-        this.pauseObserverExecution = true;
         debugger
         let state = this.prov.current().getState();
         // @ts-ignore
@@ -135,7 +134,6 @@ export class NotebookProvenance {
         this.notebook.model.cells.get(state.activeCell).value.text = state.cellValue;
         this._actionFunctions.changeActiveCell(state.activeCell);
         this._actionFunctions.setCell(state.activeCell, state.cellType);
-        this.pauseObserverExecution = false;
       }
       this.pauseTracking = false;
       provVisUpdate(this._prov);
@@ -145,7 +143,6 @@ export class NotebookProvenance {
       console.log("activeCell observer called");
       this.pauseTracking = true;
       if(!this.pauseObserverExecution){
-        this.pauseObserverExecution = true;
         debugger
         let state = this.prov.current().getState();
         // @ts-ignore
@@ -153,36 +150,31 @@ export class NotebookProvenance {
         // @ts-ignore
         // this.notebook.model.cells.get(state.activeCell).value.text = state.cellValue;
         this._actionFunctions.changeActiveCell(state.activeCell);
-        this.pauseObserverExecution = false;
       }
       provVisUpdate(this._prov);
       this.pauseTracking = false;
     });
 
-    this.prov.addObserver(["cellType"], () => {
-      console.log("cellType observer called");
-      this.pauseTracking = true;
-      if(!this.pauseObserverExecution){
-        this.pauseObserverExecution = true;
-        debugger
-        let state = this.prov.current().getState();
-        // @ts-ignore
-        // this.notebook.model.cells.get(state.activeCell).type = state.cellType;
-        this._actionFunctions.setCell(state.activeCell, state.cellType);
-        this.pauseObserverExecution = false;
-      }
-
-      provVisUpdate(this._prov);
-      this.pauseTracking = false;
-    });
-
+    // this.prov.addObserver(["cellType"], () => {
+    //   console.log("cellType observer called");
+    //   this.pauseTracking = true;
+    //   if(!this.pauseObserverExecution){
+    //     debugger
+    //     let state = this.prov.current().getState();
+    //     // @ts-ignore
+    //     this.notebook.model.cells.get(state.activeCell).type = state.cellType;
+    //     this._actionFunctions.setCell(state.activeCell, state.cellType);
+    //   }
+    //
+    //   provVisUpdate(this._prov);
+    //   this.pauseTracking = false;
+    // });
+    //
     // this.prov.addObserver(["cellValue"], () => {
-    //   debugger
-    //   // provVisUpdate()
-    //   // console.log(this.prov.graph())
     //   console.log("cellValue observer called");
     //   this.pauseTracking = true;
     //   if(!this.pauseObserverExecution){
+    //     debugger
     //     let state = this.prov.current().getState();
     //     // @ts-ignore
     //     this.notebook.model.fromJSON(state.model);
