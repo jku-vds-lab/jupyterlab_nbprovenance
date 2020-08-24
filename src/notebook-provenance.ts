@@ -126,7 +126,7 @@ export class NotebookProvenance {
       console.log("model observer called");
       this.pauseTracking = true;
       if(!this.pauseObserverExecution){
-        debugger
+
         let state = this.prov.current().getState();
         // @ts-ignore
         this.notebook.model.fromJSON(state.model); //This takes a LOT of time I think?
@@ -136,6 +136,7 @@ export class NotebookProvenance {
         this._actionFunctions.setCell(state.activeCell, state.cellType);
       }
       this.pauseTracking = false;
+      
       provVisUpdate(this._prov);
     });
 
@@ -143,7 +144,7 @@ export class NotebookProvenance {
       console.log("activeCell observer called");
       this.pauseTracking = true;
       if(!this.pauseObserverExecution){
-        debugger
+
         let state = this.prov.current().getState();
         // @ts-ignore
         //this.notebook.model.fromJSON(state.model); // This is needed because otherwise sometimes clicking on "addCell" won't change the state of the notebook
@@ -151,15 +152,17 @@ export class NotebookProvenance {
         // this.notebook.model.cells.get(state.activeCell).value.text = state.cellValue;
         this._actionFunctions.changeActiveCell(state.activeCell);
       }
-      provVisUpdate(this._prov);
       this.pauseTracking = false;
+      
+      provVisUpdate(this._prov);
+
     });
 
     // this.prov.addObserver(["cellType"], () => {
     //   console.log("cellType observer called");
     //   this.pauseTracking = true;
     //   if(!this.pauseObserverExecution){
-    //     debugger
+    //
     //     let state = this.prov.current().getState();
     //     // @ts-ignore
     //     this.notebook.model.cells.get(state.activeCell).type = state.cellType;
@@ -174,7 +177,7 @@ export class NotebookProvenance {
     //   console.log("cellValue observer called");
     //   this.pauseTracking = true;
     //   if(!this.pauseObserverExecution){
-    //     debugger
+    //
     //     let state = this.prov.current().getState();
     //     // @ts-ignore
     //     this.notebook.model.fromJSON(state.model);

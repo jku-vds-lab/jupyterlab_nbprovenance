@@ -13,7 +13,7 @@ export class NotebookProvenanceTracker {
   // the initial values are needed because in new notebooks the very first change would not be tracked otherwise
   private _prevActiveCellValue: string = "";
   private _prevActiveCellIndex: number = 0;
-  private _prevModel: PartialJSONValue = 0;
+  private _prevModel: PartialJSONValue = Object();
 
   /**
    *
@@ -34,37 +34,11 @@ export class NotebookProvenanceTracker {
       }
       console.log("activeCellChanged");
 
-
-      // Check if cell has changed
-      const cell = notebook.model!.cells.get(this._prevActiveCellIndex); // this is the cell that was active BEFORE changing active cell
-
-      if (cell && this._prevActiveCellValue !== cell.value.text) {
-        // if so add to prov
-        let action = this.notebookProvenance.prov.addAction(
-          "Cell value: "+cell.value.text,
-          (state:ApplicationState) => {
-            // @ts-ignore
-            state.cellValue = self.notebookProvenance.notebook.model.cells.get(this._prevActiveCellIndex).value.text
-            // @ts-ignore
-            state.model = self.notebookProvenance.notebook.model.toJSON();
-            this._prevModel = state.model;
-            state.modelWorkaround++;
-            return state;
-          }
-        );
-
-        console.log(action);
-
-        this.notebookProvenance.pauseObserverExecution = true;
-        action
-          .addExtra({changedCellId: this._prevActiveCellIndex})
-          .addEventType("changeCellValue")
-          .alwaysStoreState(true)
-          .applyAction();
-        this.notebookProvenance.pauseObserverExecution = false;
-      }
-
       debugger
+      this.trackCellValueChanged(notebook);
+
+
+
       let action = this.notebookProvenance.prov.addAction(
         "Active cell: " + String(notebook.activeCellIndex),
         (state:ApplicationState) => {
@@ -105,39 +79,10 @@ export class NotebookProvenanceTracker {
         return;
       }
 
-      // Track if cell value has been changed before adding e.g. edding a new cell
 
-      // Check if cell has changed
-      const cell = self.notebookProvenance.notebook.model!.cells.get(this._prevActiveCellIndex);
       debugger
-
-      if (cell && self._prevActiveCellValue !== cell.value.text) {
-        // if so add to prov
-
-        let action = self.notebookProvenance.prov.addAction(
-          "Cell value: "+cell.value.text,
-          (state:ApplicationState) => {
-            // @ts-ignore
-            // state.model = self.notebookProvenance.notebook.model.toJSON();
-            // this._prevModel = state.model;
-            state.model = self._prevModel;
-            state.modelWorkaround++;
-            // @ts-ignore
-            state.cellValue = self.notebookProvenance.notebook.model.cells.get(this._prevActiveCellIndex).value.text;
-            return state;
-          }
-        );
-        console.log(action);
-
-        this.notebookProvenance.pauseObserverExecution = true;
-        action
-          .addExtra({changedCellId: this._prevActiveCellIndex})
-          .addEventType("changeCellValue")
-          .alwaysStoreState(true)
-          .applyAction();
-        this.notebookProvenance.pauseObserverExecution = false;
-      }
-
+      // Track if cell value has been changed before adding e.g. adding a new cell
+      this.trackCellValueChanged(self.notebookProvenance.notebook);
 
 
       console.log('Cell ran', obj.cell);
@@ -222,6 +167,8 @@ export class NotebookProvenanceTracker {
         return;
       }
 
+      
+
       const self = this;
       const notebook = self.notebookProvenance.notebook;
       // @ts-ignore
@@ -230,50 +177,22 @@ export class NotebookProvenanceTracker {
       console.log("_onCellsChanged");
       console.log(change);
 
-      let action;
-
-      // Track if cell value has been changed before adding e.g. adding a new cell
-
-      // Check if cell has changed
-      const cell = this.notebookProvenance.notebook.model!.cells.get(this._prevActiveCellIndex);
-
       debugger
-      if (cell && this._prevActiveCellValue !== cell.value.text) {
-        // if so add to prov
-        let action = this.notebookProvenance.prov.addAction(
-          "Cell value: "+cell.value.text,
-          (state:ApplicationState) => {
-            state.modelWorkaround++;
-            // @ts-ignore
-            // state.model = self.notebookProvenance.notebook.model.toJSON();  // There was some problem, but I cannot recreate it
-            state.model = this._prevModel;
-            // @ts-ignore
-            state.cellValue = self.notebookProvenance.notebook.model.cells.get(this._prevActiveCellIndex).value.text;
-            return state;
-          }
-        );
-        console.log(action);
-
-        this.notebookProvenance.pauseObserverExecution = true;
-        action
-          .addExtra({changedCellId: this._prevActiveCellIndex})
-          .addEventType("changeCellValue")
-          .alwaysStoreState(true)
-          .applyAction();
-        this.notebookProvenance.pauseObserverExecution = false;
-      }
+      // Track if cell value has been changed before adding e.g. adding a new cell
+      this.trackCellValueChanged(notebook);
 
 
+      let action;
       switch (change.type) {
         case 'add':
           action = this.notebookProvenance.prov.addAction(
             "Add cell",
             (state:ApplicationState) => {
-
+              state.cellValue = currentCell.value.text;
+              state.cellType = currentCell.type;
               // @ts-ignore
               state.model = self.notebookProvenance.notebook.model.toJSON();
               this._prevModel = state.model;
-              state.cellValue = currentCell.value.text;
               state.modelWorkaround++;
               return state;
             }
@@ -311,8 +230,8 @@ export class NotebookProvenanceTracker {
           action = this.notebookProvenance.prov.addAction(
             "removeCell",
             (state:ApplicationState) => {
-
               state.cellValue = currentCell.value.text;
+              state.cellType = currentCell.type;
               // @ts-ignore
               state.model = self.notebookProvenance.notebook.model.toJSON();
               this._prevModel = state.model;
@@ -335,6 +254,7 @@ export class NotebookProvenanceTracker {
             "moveCell",
             (state:ApplicationState) => {
               state.cellValue = currentCell.value.text;
+              state.cellType = currentCell.type;
               // @ts-ignore
               state.model = self.notebookProvenance.notebook.model.toJSON();
               this._prevModel = state.model;
@@ -376,6 +296,7 @@ export class NotebookProvenanceTracker {
           this.notebookProvenance.pauseObserverExecution = false;
           break;
         case 'set': // caused by, e.g., change cell type
+          
           action = this.notebookProvenance.prov.addAction(
             "setCell",
             (state:ApplicationState) => {
@@ -383,9 +304,8 @@ export class NotebookProvenanceTracker {
               // @ts-ignore
               state.model = self.notebookProvenance.notebook.model.toJSON();
               this._prevModel = state.model;
-              debugger
-              state.cellType = notebook.model!.cells.get(notebook.activeCellIndex).type;
-              // state.modelWorkaround++;
+              state.cellType = currentCell.type;
+              state.modelWorkaround++;
               return state;
             }
           );
@@ -410,4 +330,48 @@ export class NotebookProvenanceTracker {
     };
     this.notebookProvenance.notebook.model!.cells.changed.connect(cellsChangedListener, this);
   }
+
+  trackCellValueChanged(notebook: Notebook): any {
+    // Check if cell has changed
+    
+    const cell = notebook.model!.cells.get(this._prevActiveCellIndex); // this is the cell that was active BEFORE changing active cell
+
+    if (cell && this._prevActiveCellValue !== cell.value.text) {
+      // if so add to prov
+      let action = this.notebookProvenance.prov.addAction(
+        "Cell value: "+cell.value.text,
+        (state:ApplicationState) => {
+          // @ts-ignore
+          state.cellValue = cell.value.text;
+          // state.cellType = cell.type;
+          // @ts-ignore
+          // state.model = self.notebookProvenance.notebook.model.toJSON();
+          // this._prevModel = state.model;
+          if(self._prevModel != null){
+            state.model = this._prevModel;
+          }else{
+            // If there has not been a saved model yet
+            // @ts-ignore
+            state.model = notebook.model.toJSON();
+            this._prevModel = state.model;
+          }
+
+          debugger
+          state.modelWorkaround++;
+          return state;
+        }
+      );
+
+      console.log(action);
+
+      this.notebookProvenance.pauseObserverExecution = true;
+      action
+        .addExtra({changedCellId: this._prevActiveCellIndex})
+        .addEventType("changeCellValue")
+        .alwaysStoreState(true)
+        .applyAction();
+      this.notebookProvenance.pauseObserverExecution = false;
+    }
+  }
+
 }
