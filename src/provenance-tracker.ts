@@ -240,6 +240,7 @@ export class NotebookProvenanceTracker {
               state.cellType = currentCell.type;
               state.moveToIndex = notebook.activeCellIndex;
               state.activeCell = notebook.activeCellIndex;
+              state.removeCellIndex = notebook.activeCellIndex;
               // @ts-ignore
               state.model = self.notebookProvenance.notebook.model.toJSON();
               this._prevModel = state.model;
@@ -352,6 +353,12 @@ export class NotebookProvenanceTracker {
       if(change.type == "move"){
         cell = change.newValues[0]; // this is the cell that was active BEFORE changing active cell, but at a different location now
       }
+    }
+    if(cell == undefined){
+      // when removing, jupyterlab first calls changeActiveCell where the cellOrder of model.cells does NOT contain the current cell anymore,
+      // the cell map on the other hand DOES still contain the cell ==> this solution needed
+      // @ts-ignore
+      cell = notebook.model.cells._cellMap.values()[this._prevActiveCellIndex];
     }
 
     if (cell && this._prevActiveCellValue !== cell.value.text) {

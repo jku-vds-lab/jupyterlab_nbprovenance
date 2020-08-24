@@ -42,6 +42,7 @@ export interface ApplicationState {
   cellValue: string;
   cellType: string;
   moveToIndex: number;
+  removeCellIndex?: number;
 };
 
 export interface ApplicationExtra {
@@ -59,7 +60,8 @@ const initialState: ApplicationState = {
   modelWorkaround: 0,
   cellValue: "",
   cellType: "code",
-  moveToIndex: 0
+  moveToIndex: 0,
+  removeCellIndex: 0
 }
 
 export type EventTypes = "Change active cell" | "executeCell" | "addCell" | "removeCell" | "moveCell" | "setCell" | "changeCellValue";
@@ -139,6 +141,9 @@ export class NotebookProvenance {
           this._actionFunctions.moveCell(state.activeCell, state.moveToIndex);
         }else{
           this._actionFunctions.setCell(state.activeCell, state.cellType);
+        }
+        if(state.removeCellIndex){
+          // this._actionFunctions.removeCell(state.removeCellIndex);
         }
       }
       this.pauseTracking = false;
