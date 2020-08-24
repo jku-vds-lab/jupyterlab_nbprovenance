@@ -120,14 +120,14 @@ export class NotebookProvenance {
     }
 
     // to check if it loaded: this.prov.graph()
-    console.log("Graph at beginning:", this.prov.graph())
+    // console.log("Graph at beginning:", this.prov.graph())
 
     this._actionFunctions = new ActionFunctions(this.notebook, this.sessionContext);
 
     this.prov.addObserver(["modelWorkaround"], () => {
       // provVisUpdate()
       // console.log(this.prov.graph())
-      console.log("model observer called");
+      // console.log("model observer called");
       this.pauseTracking = true;
       if(!this.pauseObserverExecution){
         debugger
@@ -152,7 +152,7 @@ export class NotebookProvenance {
     });
 
     this.prov.addObserver(["activeCell"], () => {
-      console.log("activeCell observer called");
+      // console.log("activeCell observer called");
       this.pauseTracking = true;
       if(!this.pauseObserverExecution){
 
