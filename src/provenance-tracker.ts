@@ -87,8 +87,12 @@ export class NotebookProvenanceTracker {
         return;
       }
 
-
       let notebook = self.notebookProvenance.notebook;
+
+      if( notebook == null || notebook.model == null){
+        return;
+      }
+
       debugger
       // Track if cell value has been changed before adding e.g. adding a new cell
       this.trackCellValueChanged(notebook);
@@ -129,14 +133,15 @@ export class NotebookProvenanceTracker {
       //     break;
       // }
 
+
       let action = this.notebookProvenance.prov.addAction(
         "executeCell",
         (state:ApplicationState) => {
 
-          if(notebook.model != null){
-            state.model = notebook.model.toJSON();
-            this._prevModel = state.model;
-          }
+          // @ts-ignore
+          state.model = notebook.model.toJSON();
+          this._prevModel = state.model;
+          debugger
           state.cellValue = notebook.model!.cells.get(notebook.activeCellIndex).value.text; // save the NEW cells value
           state.moveToIndex = notebook.activeCellIndex;
           state.activeCell = notebook.activeCellIndex;
@@ -386,6 +391,7 @@ export class NotebookProvenanceTracker {
 
     if (cell && this._prevActiveCellValue != cell.value.text) {
       // if so add to prov
+
       let action = this.notebookProvenance.prov.addAction(
         "Cell value: "+cell.value.text,
         (state:ApplicationState) => {
@@ -399,13 +405,18 @@ export class NotebookProvenanceTracker {
           // state.model = self.notebookProvenance.notebook.model.toJSON();
           // this._prevModel = state.model;
           // if(self._prevModel != null){
-            state.model = this._prevModel;
+          //   state.model = this._prevModel;
           // }else{
           //   // If there has not been a saved model yet
           //   // @ts-ignore
           //   state.model = notebook.model.toJSON();
           //   this._prevModel = state.model;
           // }
+          state.model = this._prevModel;
+          // @ts-ignore
+          // e.g. when switching activeCell after changing content and then writing content in the new cell this line is needed to preserve the model that would have existed
+          // test: add cell, change content, click cell above, change content, execute without creating new cell, undo ==> problem
+          this._prevModel = notebook.model.toJSON();
           state.modelWorkaround++;
 
 

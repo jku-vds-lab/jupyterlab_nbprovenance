@@ -128,6 +128,7 @@ export class NotebookProvenance {
       // provVisUpdate()
       // console.log(this.prov.graph())
       // console.log("model observer called");
+      debugger
       this.pauseTracking = true;
       if(!this.pauseObserverExecution){
         debugger
