@@ -41,6 +41,7 @@ export interface ApplicationState {
   activeCell: number;
   cellValue: string;
   cellType: string;
+  moveToIndex: number;
 };
 
 export interface ApplicationExtra {
@@ -57,7 +58,8 @@ const initialState: ApplicationState = {
   activeCell: 0,
   modelWorkaround: 0,
   cellValue: "",
-  cellType: "code"
+  cellType: "code",
+  moveToIndex: 0
 }
 
 export type EventTypes = "Change active cell" | "executeCell" | "addCell" | "removeCell" | "moveCell" | "setCell" | "changeCellValue";
@@ -126,14 +128,18 @@ export class NotebookProvenance {
       console.log("model observer called");
       this.pauseTracking = true;
       if(!this.pauseObserverExecution){
-
+        debugger
         let state = this.prov.current().getState();
         // @ts-ignore
         this.notebook.model.fromJSON(state.model); //This takes a LOT of time I think?
         // @ts-ignore
         this.notebook.model.cells.get(state.activeCell).value.text = state.cellValue;
         this._actionFunctions.changeActiveCell(state.activeCell);
-        this._actionFunctions.setCell(state.activeCell, state.cellType);
+        if(state.activeCell != state.moveToIndex){
+          this._actionFunctions.moveCell(state.activeCell, state.moveToIndex);
+        }else{
+          this._actionFunctions.setCell(state.activeCell, state.cellType);
+        }
       }
       this.pauseTracking = false;
       

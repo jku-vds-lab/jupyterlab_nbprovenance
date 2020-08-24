@@ -42,8 +42,9 @@ export class NotebookProvenanceTracker {
       let action = this.notebookProvenance.prov.addAction(
         "Active cell: " + String(notebook.activeCellIndex),
         (state:ApplicationState) => {
-          state.activeCell = notebook.activeCellIndex;
           state.cellValue = notebook.model!.cells.get(notebook.activeCellIndex).value.text; // save the NEW cells value
+          state.moveToIndex = notebook.activeCellIndex;
+          state.activeCell = notebook.activeCellIndex;
           // @ts-ignore
           return state;
         }
@@ -80,16 +81,17 @@ export class NotebookProvenanceTracker {
       }
 
 
+      let notebook = self.notebookProvenance.notebook;
       debugger
       // Track if cell value has been changed before adding e.g. adding a new cell
-      this.trackCellValueChanged(self.notebookProvenance.notebook);
+      this.trackCellValueChanged(notebook);
 
 
       console.log('Cell ran', obj.cell);
       let index = -1;
       // either notebook is missing model sometimes, test both
-      if (self.notebookProvenance.notebook.model && self.notebookProvenance.notebook.model.cells) {
-         index = toArray(self.notebookProvenance.notebook.model.cells.iter()).indexOf(obj.cell.model);
+      if (notebook.model && notebook.model.cells) {
+         index = toArray(notebook.model.cells.iter()).indexOf(obj.cell.model);
       } else if (obj.notebook.model && obj.notebook.model.cells) {
          index = toArray(obj.notebook.model.cells.iter()).indexOf(obj.cell.model);
       } else {
@@ -124,11 +126,13 @@ export class NotebookProvenanceTracker {
         "executeCell",
         (state:ApplicationState) => {
 
-          if(self.notebookProvenance.notebook.model != null){
-            state.model = self.notebookProvenance.notebook.model.toJSON();
+          if(notebook.model != null){
+            state.model = notebook.model.toJSON();
             this._prevModel = state.model;
           }
-          state.cellValue = self.notebookProvenance.notebook.model!.cells.get(self.notebookProvenance.notebook.activeCellIndex).value.text; // save the NEW cells value
+          state.cellValue = notebook.model!.cells.get(notebook.activeCellIndex).value.text; // save the NEW cells value
+          state.moveToIndex = notebook.activeCellIndex;
+          state.activeCell = notebook.activeCellIndex;
           state.modelWorkaround++;
           return state;
         }
@@ -179,7 +183,7 @@ export class NotebookProvenanceTracker {
 
       debugger
       // Track if cell value has been changed before adding e.g. adding a new cell
-      this.trackCellValueChanged(notebook);
+      this.trackCellValueChanged(notebook, change);
 
 
       let action;
@@ -190,6 +194,8 @@ export class NotebookProvenanceTracker {
             (state:ApplicationState) => {
               state.cellValue = currentCell.value.text;
               state.cellType = currentCell.type;
+              state.moveToIndex = notebook.activeCellIndex;
+              state.activeCell = notebook.activeCellIndex;
               // @ts-ignore
               state.model = self.notebookProvenance.notebook.model.toJSON();
               this._prevModel = state.model;
@@ -232,6 +238,8 @@ export class NotebookProvenanceTracker {
             (state:ApplicationState) => {
               state.cellValue = currentCell.value.text;
               state.cellType = currentCell.type;
+              state.moveToIndex = notebook.activeCellIndex;
+              state.activeCell = notebook.activeCellIndex;
               // @ts-ignore
               state.model = self.notebookProvenance.notebook.model.toJSON();
               this._prevModel = state.model;
@@ -255,6 +263,8 @@ export class NotebookProvenanceTracker {
             (state:ApplicationState) => {
               state.cellValue = currentCell.value.text;
               state.cellType = currentCell.type;
+              state.moveToIndex = notebook.activeCellIndex;
+              state.activeCell = notebook.activeCellIndex;
               // @ts-ignore
               state.model = self.notebookProvenance.notebook.model.toJSON();
               this._prevModel = state.model;
@@ -301,10 +311,12 @@ export class NotebookProvenanceTracker {
             "setCell",
             (state:ApplicationState) => {
               state.cellValue = currentCell.value.text;
+              state.cellType = currentCell.type;
+              state.moveToIndex = notebook.activeCellIndex;
+              state.activeCell = notebook.activeCellIndex;
               // @ts-ignore
               state.model = self.notebookProvenance.notebook.model.toJSON();
               this._prevModel = state.model;
-              state.cellType = currentCell.type;
               state.modelWorkaround++;
               return state;
             }
@@ -331,10 +343,16 @@ export class NotebookProvenanceTracker {
     this.notebookProvenance.notebook.model!.cells.changed.connect(cellsChangedListener, this);
   }
 
-  trackCellValueChanged(notebook: Notebook): any {
+  trackCellValueChanged(notebook: Notebook, change?: IObservableList.IChangedArgs<ICellModel>) {
     // Check if cell has changed
-    
-    const cell = notebook.model!.cells.get(this._prevActiveCellIndex); // this is the cell that was active BEFORE changing active cell
+
+    let cell: ICellModel = notebook.model!.cells.get(this._prevActiveCellIndex); // this is the cell that was active BEFORE changing active cell;
+    if(change != null){
+      debugger
+      if(change.type == "move"){
+        cell = change.newValues[0]; // this is the cell that was active BEFORE changing active cell, but at a different location now
+      }
+    }
 
     if (cell && this._prevActiveCellValue !== cell.value.text) {
       // if so add to prov
@@ -343,20 +361,19 @@ export class NotebookProvenanceTracker {
         (state:ApplicationState) => {
           // @ts-ignore
           state.cellValue = cell.value.text;
+          debugger
           // state.cellType = cell.type;
           // @ts-ignore
           // state.model = self.notebookProvenance.notebook.model.toJSON();
           // this._prevModel = state.model;
-          if(self._prevModel != null){
+          // if(self._prevModel != null){
             state.model = this._prevModel;
-          }else{
-            // If there has not been a saved model yet
-            // @ts-ignore
-            state.model = notebook.model.toJSON();
-            this._prevModel = state.model;
-          }
-
-          debugger
+          // }else{
+          //   // If there has not been a saved model yet
+          //   // @ts-ignore
+          //   state.model = notebook.model.toJSON();
+          //   this._prevModel = state.model;
+          // }
           state.modelWorkaround++;
           return state;
         }
