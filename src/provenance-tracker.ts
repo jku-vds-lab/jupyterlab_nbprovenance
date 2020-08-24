@@ -70,6 +70,8 @@ export class NotebookProvenanceTracker {
       let cell = notebook.model.cells._cellMap.values()[this._prevActiveCellIndex]
       if (cell.model) {
         this._prevActiveCellValue = cell.model.value.text;
+      }else{ // this is the case for new cells that have never had content yet
+        this._prevActiveCellValue = "";
       }
 
 
@@ -346,6 +348,7 @@ export class NotebookProvenanceTracker {
           return;
       }
 
+      debugger
       this._prevActiveCellIndex = this.notebookProvenance.notebook.activeCellIndex;
       // @ts-ignore
       let cell = notebook.model.cells._cellMap.values()[this._prevActiveCellIndex]
@@ -357,6 +360,10 @@ export class NotebookProvenanceTracker {
   }
 
   trackCellValueChanged(notebook: Notebook, change?: IObservableList.IChangedArgs<ICellModel>) {
+    // sometimes in between actions the model is null. e.g. wehen execute+addbelow is clicked, during the execute the model is null
+    if(notebook.model == null){
+      return;
+    }
     // Check if cell has changed
 
     // let cell: ICellModel = notebook.model!.cells.get(this._prevActiveCellIndex); // this is the cell that was active BEFORE changing active cell;
@@ -373,17 +380,19 @@ export class NotebookProvenanceTracker {
       }
       if(change.type == "remove"){
         debugger
-        this._prevActiveCellValue;
+        // this._prevActiveCellValue;
       }
     }
 
-    if (cell && this._prevActiveCellValue !== cell.value.text) {
+    if (cell && this._prevActiveCellValue != cell.value.text) {
       // if so add to prov
       let action = this.notebookProvenance.prov.addAction(
         "Cell value: "+cell.value.text,
         (state:ApplicationState) => {
           // @ts-ignore
           state.cellValue = cell.value.text;
+          this._prevActiveCellValue = state.cellValue; // otherwise e.g. execute+addCell will add a changeCellValue-action two times
+          // this._prevActiveCellIndex = notebook.activeCellIndex;
           debugger
           // state.cellType = cell.type;
           // @ts-ignore
@@ -398,6 +407,9 @@ export class NotebookProvenanceTracker {
           //   this._prevModel = state.model;
           // }
           state.modelWorkaround++;
+
+
+
           return state;
         }
       );
@@ -411,7 +423,12 @@ export class NotebookProvenanceTracker {
         .alwaysStoreState(true)
         .applyAction();
       this.notebookProvenance.pauseObserverExecution = false;
+
+      // this._prevActiveCellIndex = this.notebookProvenance.notebook.activeCellIndex;
+      // // @ts-ignore
+      // if (cell.model) {
+      //   this._prevActiveCellValue = cell.model.value.text;
+      // }
     }
   }
-
 }
