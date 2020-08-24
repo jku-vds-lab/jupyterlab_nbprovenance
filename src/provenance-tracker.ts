@@ -70,8 +70,8 @@ export class NotebookProvenanceTracker {
       let cell = notebook.model.cells._cellMap.values()[this._prevActiveCellIndex]
       if (cell.model) {
         this._prevActiveCellValue = cell.model.value.text;
-      }else{ // this is the case for new cells that have never had content yet
-        this._prevActiveCellValue = "";
+      }else if (cell.value){
+        this._prevActiveCellValue = cell.value.text;
       }
 
 
@@ -385,7 +385,7 @@ export class NotebookProvenanceTracker {
       }
       if(change.type == "remove"){
         debugger
-        // this._prevActiveCellValue;
+        return; // do not track cell changes when removing: they are tracked by changeActiveCell already every time
       }
     }
 
