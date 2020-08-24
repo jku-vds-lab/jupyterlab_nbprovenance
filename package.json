@@ -1,5 +1,5 @@
 {
-  "name": "@visualstorytelling/jupyterlab_nbprovenance",
+  "name": "jupyterlab_nbprovenance",
   "version": "0.2.0",
   "description": "JupyterLab Notebook Provenance",
   "keywords": [
@@ -7,9 +7,9 @@
     "jupyterlab",
     "jupyterlab extension"
   ],
-  "homepage": "https://github.com/Caleydo/jupyterlab_nbprovenance",
+  "homepage": "https://github.com/richardwolfmayr/jupyterlab_nbprovenance/",
   "bugs": {
-    "url": "https://github.com/Caleydo/jupyterlab_nbprovenance/issues"
+    "url": "https://github.com/richardwolfmayr/jupyterlab_nbprovenance/issues"
   },
   "license": "BSD-3-Clause",
   "author": "The Caleydo Team",
@@ -21,7 +21,7 @@
   "types": "lib/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Caleydo/jupyterlab_nbprovenance.git"
+    "url": "https://github.com/richardwolfmayr/jupyterlab_nbprovenance.git"
   },
   "scripts": {
     "build": "tsc",
@@ -47,10 +47,8 @@
     "@types/d3": "^5.7.2",
     "@types/react": "^16.9.38",
     "@types/react-dom": "^16.9.8",
-    "@visdesignlab/provenance-lib-core": "^5.0.0",
-    "@visualstorytelling/provenance-core": "1.1.7",
-    "@visualstorytelling/provenance-tree-visualization-react": "~1.0.3",
-    "@visualstorytelling/slide-deck-visualization": "~1.0.1",
+    "@visdesignlab/trrack": "^1.2.0",
+    "@visdesignlab/trrack-vis": "^1.1.0",
     "awesome-typescript-loader": "^5.2.1",
     "circular-json": "^0.5.9",
     "d3": "^5.12.0",
