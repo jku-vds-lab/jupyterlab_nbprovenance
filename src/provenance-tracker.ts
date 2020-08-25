@@ -1,9 +1,8 @@
 import { Notebook, NotebookActions } from '@jupyterlab/notebook';
 import { IObservableList } from '@jupyterlab/observables';
 import { ICellModel, Cell } from '@jupyterlab/cells';
-import {ApplicationExtra, ApplicationState, EventTypes, NotebookProvenance} from './notebook-provenance';
+import { ApplicationState, NotebookProvenance} from './notebook-provenance';
 import { toArray } from '@lumino/algorithm';
-import {ActionFunction, Provenance} from "@visdesignlab/trrack";
 import {PartialJSONValue} from '@lumino/coreutils';
 
 /**

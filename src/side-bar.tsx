@@ -8,7 +8,6 @@ import { NotebookPanel, Notebook, INotebookTracker } from '@jupyterlab/notebook'
 import { notebookModelCache } from '.';
 import { Widget } from "@lumino/widgets";
 import { Message } from "@lumino/messaging";
-import "./action-listener";
 import "../style/side-bar.css";
 
 

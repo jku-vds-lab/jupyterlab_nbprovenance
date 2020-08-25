@@ -1,8 +1,7 @@
 import {JupyterLab} from '@jupyterlab/application';
-import {INotebookModel, Notebook, NotebookModel} from '@jupyterlab/notebook';
+import {INotebookModel, Notebook} from '@jupyterlab/notebook';
 import {ActionFunctions} from './action-functions';
 import {ISessionContext} from '@jupyterlab/apputils';
-import {sessionContextDialogs} from '@jupyterlab/apputils';
 
 import {
   initProvenance,
