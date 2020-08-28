@@ -203,6 +203,7 @@ export class NotebookProvenanceTracker {
 
       let action;
       let cellPositions;
+      let length; // length of the cells array
       switch (change.type) {
         case 'add':
           action = this.notebookProvenance.prov.addAction(
@@ -224,7 +225,7 @@ export class NotebookProvenanceTracker {
           // moved from change.oldIndex to change.newIndex
           // all in between are changed. If index is decreased(new index < old index), others are increased. If index is increased, others are decreased
           // @ts-ignore
-          let length = self.notebookProvenance.notebook.model.cells.length-1;
+          length = self.notebookProvenance.notebook.model.cells.length-1;
           cellPositions = new Array<number>(length);
           // @ts-ignore
           for(let i=0;i<length;i++){
@@ -267,24 +268,23 @@ export class NotebookProvenanceTracker {
           );
 
 
-          // moved from change.oldIndex to change.newIndex
-          // all in between are changed. If index is decreased(new index < old index), others are increased. If index is increased, others are decreased
+          debugger
           // @ts-ignore
-          cellPositions = new Array<number>(self.notebookProvenance.notebook.model.cells.length);
+          length = self.notebookProvenance.notebook.model.cells.length+1; // because the remove has already decreased the size, but the size before that is needed
           // @ts-ignore
-          for(let i=0;i<self.notebookProvenance.notebook.model.cells.length;i++){
+          cellPositions = new Array<number>(length);
+          // @ts-ignore
+          for(let i=0;i<change.oldIndex;i++){
             cellPositions[i] = i;
           }
-          cellPositions[change.oldIndex] = change.newIndex;
-          if(change.newIndex < change.oldIndex){
-            for(let i=change.newIndex;i<change.oldIndex;i++){
-              cellPositions[i] = i+1;
-            }
-          }else{
-            for(let i=change.oldIndex+1;i<=change.newIndex;i++){
-              cellPositions[i] = i-1;
-            }
+          cellPositions[change.oldIndex] = -1;
+          // @ts-ignore
+          for(let i=change.oldIndex+1;i<length;i++){
+            cellPositions[i] = i-1;
           }
+          debugger
+          console.log("CELL POSITIONS: "+cellPositions);
+
 
           console.log(action);
           this.notebookProvenance.pauseObserverExecution = true;
