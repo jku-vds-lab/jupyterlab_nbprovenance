@@ -6,9 +6,6 @@ import { notebookModelCache } from '.';
 import { Widget } from "@lumino/widgets";
 import { Message } from "@lumino/messaging";
 import "../style/side-bar.css";
-
-
-
 import
 {
     Provenance,
@@ -61,20 +58,6 @@ export class SideBar extends Widget {
                 }
             });
         });
-
-
-        // shell.currentChanged.connect((shell: LabShell) => {
-        //     const currentWidget = shell.currentWidget;
-        //     if (currentWidget === null || (currentWidget instanceof NotebookPanel) === false) {
-        //         notebookProvenance = null;
-        //         this.update();
-        //         return;
-        //     }
-        //
-        //     const notebook: Notebook = (currentWidget as NotebookPanel).content;
-        //     notebookProvenance = (notebookModelCache.has(notebook)) ? notebookModelCache.get(notebook)! : null;
-        //     this.update();
-        // });
 
         let topBar = document.createElement("div");
         this.node.appendChild(topBar);
