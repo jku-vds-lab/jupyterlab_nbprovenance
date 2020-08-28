@@ -14,28 +14,12 @@ import "../style/side-bar.css";
 
 import
 {
-    initProvenance,
-    ProvenanceGraph,
     Provenance,
-    ActionFunction,
-    SubscriberFunction,
-    NodeMetadata,
-    NodeID,
-    Diff,
-    RootNode,
-    StateNode,
-    ProvenanceNode,
-    isStateNode,
-    Nodes,
-    CurrentNode,
-    Artifacts,
-    Extra
+    NodeID
 } from "@visdesignlab/trrack";
 
 import {
-    ProvVis,
     EventConfig,
-    // Config,
     ProvVisConfig,
     ProvVisCreator
 } from "@visdesignlab/trrack-vis";
@@ -48,7 +32,7 @@ import {
     symbolSquare,
     symbolStar,
     symbolTriangle,
-    symbolWye
+    // symbolWye
 } from "d3-shape";
 import * as React from "react";
 import {style} from "typestyle";

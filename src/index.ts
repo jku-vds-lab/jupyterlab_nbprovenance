@@ -24,7 +24,7 @@ function activate(app: JupyterLab, restorer: ILayoutRestorer, nbTracker: INotebo
     nbPanel.sessionContext.ready.then(() => { // TODO: check if sessionContext is really the equivalent of session ... "ClientSession to SessionContext"
       const notebook: Notebook = nbPanel.content;
       if (!notebookModelCache.has(notebook)) {
-        notebookModelCache.set(notebook, new NotebookProvenance(app, notebook, nbPanel.sessionContext, nbPanel.context));
+        notebookModelCache.set(notebook, new NotebookProvenance(notebook, nbPanel.sessionContext, nbPanel.context));
       }
     });
   });

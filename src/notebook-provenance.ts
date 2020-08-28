@@ -1,25 +1,10 @@
-import {JupyterLab} from '@jupyterlab/application';
 import {INotebookModel, Notebook} from '@jupyterlab/notebook';
 import {ActionFunctions} from './action-functions';
 import {ISessionContext} from '@jupyterlab/apputils';
 
 import {
   initProvenance,
-  // ProvenanceGraph,
-  Provenance,
-  ActionFunction,
-  SubscriberFunction,
-  NodeMetadata,
-  NodeID,
-  Diff,
-  RootNode,
-  StateNode,
-  // ProvenanceNode,
-  isStateNode,
-  Nodes,
-  CurrentNode,
-  Artifacts,
-  Extra
+  Provenance
 } from '@visdesignlab/trrack';
 
 import {NotebookProvenanceTracker} from './provenance-tracker'
@@ -85,11 +70,11 @@ export class NotebookProvenance {
 
 
   // Why is this context not working like app, notebook, sessionContext?
-  constructor(private app: JupyterLab, public readonly notebook: Notebook, private sessionContext: ISessionContext, private context: DocumentRegistry.IContext<INotebookModel>) {
-    this.init(context);
+  constructor(public readonly notebook: Notebook, private sessionContext: ISessionContext, private context: DocumentRegistry.IContext<INotebookModel>) {
+    this.init();
   }
 
-  private init(context: DocumentRegistry.IContext<INotebookModel>) {
+  private init() {
     this._prov = initProvenance<ApplicationState, EventTypes, ApplicationExtra>(initialState, false);
 
 
@@ -104,18 +89,14 @@ export class NotebookProvenance {
     //   measurementId: "G-Z6JK4BJ7KB"
     // });
 
-    context.saveState.connect(this.saveProvenanceGraph,this);
+    this.context.saveState.connect(this.saveProvenanceGraph,this);
 
 
     if (this.notebook.model!.metadata.has('provenance')) {
       const serGraph = this.notebook.model!.metadata.get('provenance');
       if (serGraph) {
         this._prov.importProvenanceGraph(serGraph.toString());
-      } else {
-        //this._graph = new ProvenanceGraph({ name: 'nbprovenance.default.graph', version: this.app.version });
       }
-    } else {
-      //this._graph = new ProvenanceGraph({ name: 'nbprovenance.default.graph', version: this.app.version });
     }
 
     // to check if it loaded: this.prov.graph()

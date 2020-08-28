@@ -72,9 +72,6 @@ export class NotebookProvenanceTracker {
           this._prevActiveCellValue = cell.value.text;
         }
       }
-
-
-
     };
 
     this.notebookProvenance.notebook.activeCellChanged.connect(activeCellChangedListener);
@@ -108,37 +105,10 @@ export class NotebookProvenanceTracker {
       } else {
         throw new Error('Unable to find cell in notebook');
       }
-      // let action: ReversibleAction;
-      // let iaction: IrreversibleAction;
-      //
-      // switch (obj.cell.model.type) {
-      //   case 'markdown':
-      //   case 'raw':
-      //     action = {
-      //       do: 'cellOutputs',
-      //       doArguments: [index, []],
-      //       undo: 'clearOutputs',
-      //       undoArguments: [index]
-      //     };
-      //     // Promise.resolve(this.notebookProvenance.tracker.applyAction(action, true));
-      //     break;
-      //   case 'code':
-      //     iaction = {
-      //       do: 'executeCell',
-      //       doArguments: [index],
-      //     };
-      //     // Promise.resolve(this.notebookProvenance.tracker.applyAction(iaction, true));
-      //     break;
-      //   default:
-      //     break;
-      // }
-
 
       let action = this.notebookProvenance.prov.addAction(
         "executeCell",
         (state:ApplicationState) => {
-
-
           state.model = notebook.model!.toJSON();
           this._prevModel = state.model;
           debugger
@@ -159,8 +129,6 @@ export class NotebookProvenanceTracker {
         .alwaysStoreState(true)
         .applyAction();
       this.notebookProvenance.pauseObserverExecution = false;
-
-
 
       this._prevActiveCellIndex = this.notebookProvenance.notebook.activeCellIndex;
       if(notebook.model){
@@ -188,8 +156,6 @@ export class NotebookProvenanceTracker {
       if (this.notebookProvenance.pauseTracking) {
         return;
       }
-
-
 
       const self = this;
       const notebook = self.notebookProvenance.notebook;
