@@ -16,9 +16,9 @@ import
 } from "@visdesignlab/trrack";
 
 import {
-    EventConfig,
-    ProvVisConfig,
-    ProvVisCreator
+  EventConfig,
+  ProvVisConfig,
+  ProvVisCreator
 } from "@visdesignlab/trrack-vis";
 
 import {

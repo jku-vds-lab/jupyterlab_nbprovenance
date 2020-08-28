@@ -40,7 +40,7 @@ const initialState: ApplicationState = {
   cellType: "code",
   moveToIndex: 0,
   removeCellIndex: 0
-}
+};
 
 export type EventTypes = "Change active cell" | "executeCell" | "addCell" | "removeCell" | "moveCell" | "setCell" | "changeCellValue";
 export const EventTypes = ["Change active cell", "executeCell", "addCell", "removeCell", "moveCell", "setCell", "changeCellValue"];
