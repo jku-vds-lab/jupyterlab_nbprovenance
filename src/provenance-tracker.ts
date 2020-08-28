@@ -26,7 +26,6 @@ export class NotebookProvenanceTracker {
 
   trackActiveCell(): any {
     // console.log("trackActiveCell");
-    const self = this;
     const activeCellChangedListener = (notebook: Notebook) => {
       if (this.notebookProvenance.pauseTracking) {
         return;
@@ -44,7 +43,6 @@ export class NotebookProvenanceTracker {
           state.cellValue = notebook.model!.cells.get(notebook.activeCellIndex).value.text; // save the NEW cells value
           state.moveToIndex = notebook.activeCellIndex;
           state.activeCell = notebook.activeCellIndex;
-          // @ts-ignore
           return state;
         }
       );
@@ -65,13 +63,16 @@ export class NotebookProvenanceTracker {
       // so the value of the cell of PREVIOUS index is compared with the prevActiveCellVALUE when clicking a new cell
       this._prevActiveCellIndex = notebook.activeCellIndex;
       debugger
-      // @ts-ignore
-      let cell = notebook.model.cells._cellMap.values()[this._prevActiveCellIndex]
-      if (cell.model) {
-        this._prevActiveCellValue = cell.model.value.text;
-      }else if (cell.value){
-        this._prevActiveCellValue = cell.value.text;
+      if(notebook.model){
+        // @ts-ignore   _cellMap DOES exist
+        let cell = notebook.model.cells._cellMap.values()[this._prevActiveCellIndex];
+        if (cell.model) {
+          this._prevActiveCellValue = cell.model.value.text;
+        }else if (cell.value){
+          this._prevActiveCellValue = cell.value.text;
+        }
       }
+
 
 
     };
@@ -137,8 +138,8 @@ export class NotebookProvenanceTracker {
         "executeCell",
         (state:ApplicationState) => {
 
-          // @ts-ignore
-          state.model = notebook.model.toJSON();
+
+          state.model = notebook.model!.toJSON();
           this._prevModel = state.model;
           debugger
           state.cellValue = notebook.model!.cells.get(notebook.activeCellIndex).value.text; // save the NEW cells value
@@ -162,10 +163,12 @@ export class NotebookProvenanceTracker {
 
 
       this._prevActiveCellIndex = this.notebookProvenance.notebook.activeCellIndex;
-      // @ts-ignore
-      let cell = notebook.model.cells._cellMap.values()[this._prevActiveCellIndex]
-      if (cell.model) {
-        this._prevActiveCellValue = cell.model.value.text;
+      if(notebook.model){
+        // @ts-ignore   _cellMap DOES exist
+        let cell = notebook.model.cells._cellMap.values()[this._prevActiveCellIndex];
+        if (cell.model) {
+          this._prevActiveCellValue = cell.model.value.text;
+        }
       }
     }, this);
   }
@@ -190,8 +193,10 @@ export class NotebookProvenanceTracker {
 
       const self = this;
       const notebook = self.notebookProvenance.notebook;
-      // @ts-ignore
-      const currentCell = notebook.model.cells.get(notebook.activeCellIndex);
+      let currentCell: ICellModel;
+      if(notebook.model){
+        currentCell = notebook.model.cells.get(notebook.activeCellIndex);
+      }
 
       // console.log("_onCellsChanged");
       // console.log(change);
@@ -213,10 +218,11 @@ export class NotebookProvenanceTracker {
               state.cellType = currentCell.type;
               state.moveToIndex = notebook.activeCellIndex;
               state.activeCell = notebook.activeCellIndex;
-              // @ts-ignore
-              state.model = self.notebookProvenance.notebook.model.toJSON();
-              this._prevModel = state.model;
-              state.modelWorkaround++;
+              if(notebook.model){
+                state.model = notebook.model.toJSON()
+                this._prevModel = state.model;
+                state.modelWorkaround++;
+              }
               return state;
             }
           );
@@ -224,19 +230,17 @@ export class NotebookProvenanceTracker {
 
           // moved from change.oldIndex to change.newIndex
           // all in between are changed. If index is decreased(new index < old index), others are increased. If index is increased, others are decreased
-          // @ts-ignore
-          length = self.notebookProvenance.notebook.model.cells.length-1;
-          cellPositions = new Array<number>(length);
-          // @ts-ignore
-          for(let i=0;i<length;i++){
-            cellPositions[i] = i;
-          }
+          if(notebook.model){
+            length = notebook.model.cells.length-1;
+            cellPositions = new Array<number>(length);
+            for(let i=0;i<length;i++){
+              cellPositions[i] = i;
+            }
 
-          for(let i=change.newIndex;i<length;i++){
-            cellPositions[i] = i+1;
+            for(let i=change.newIndex;i<length;i++){
+              cellPositions[i] = i+1;
+            }
           }
-
-          // console.log("Relations:", relationsAdd);
 
           console.log(action);
           this.notebookProvenance.pauseObserverExecution = true;
@@ -259,32 +263,28 @@ export class NotebookProvenanceTracker {
               state.moveToIndex = notebook.activeCellIndex;
               state.activeCell = notebook.activeCellIndex;
               state.removeCellIndex = notebook.activeCellIndex;
-              // @ts-ignore
-              state.model = self.notebookProvenance.notebook.model.toJSON();
-              this._prevModel = state.model;
-              state.modelWorkaround++;
+              if(notebook.model){
+                state.model = notebook.model.toJSON();
+                this._prevModel = state.model;
+                state.modelWorkaround++;
+              }
               return state;
             }
           );
 
 
           debugger
-          // @ts-ignore
-          length = self.notebookProvenance.notebook.model.cells.length+1; // because the remove has already decreased the size, but the size before that is needed
-          // @ts-ignore
-          cellPositions = new Array<number>(length);
-          // @ts-ignore
-          for(let i=0;i<change.oldIndex;i++){
-            cellPositions[i] = i;
+          if(notebook.model){
+            length = notebook.model.cells.length+1; // because the remove has already decreased the size, but the size before that is needed
+            cellPositions = new Array<number>(length);
+            for(let i=0;i<change.oldIndex;i++){
+              cellPositions[i] = i;
+            }
+            cellPositions[change.oldIndex] = -1;
+            for(let i=change.oldIndex+1;i<length;i++){
+              cellPositions[i] = i-1;
+            }
           }
-          cellPositions[change.oldIndex] = -1;
-          // @ts-ignore
-          for(let i=change.oldIndex+1;i<length;i++){
-            cellPositions[i] = i-1;
-          }
-          debugger
-          console.log("CELL POSITIONS: "+cellPositions);
-
 
           console.log(action);
           this.notebookProvenance.pauseObserverExecution = true;
@@ -306,34 +306,35 @@ export class NotebookProvenanceTracker {
               state.cellType = currentCell.type;
               state.moveToIndex = notebook.activeCellIndex;
               state.activeCell = notebook.activeCellIndex;
-              // @ts-ignore
-              state.model = self.notebookProvenance.notebook.model.toJSON();
-              this._prevModel = state.model;
-              state.modelWorkaround++;
+              if(notebook.model){
+                state.model = notebook.model.toJSON();
+                this._prevModel = state.model;
+                state.modelWorkaround++;
+              }
               return state;
             }
           );
 
           // moved from change.oldIndex to change.newIndex
           // all in between are changed. If index is decreased(new index < old index), others are increased. If index is increased, others are decreased
-          // @ts-ignore
-          cellPositions = new Array<number>(self.notebookProvenance.notebook.model.cells.length);
-          // @ts-ignore
-          for(let i=0;i<self.notebookProvenance.notebook.model.cells.length;i++){
-            cellPositions[i] = i;
-          }
-          cellPositions[change.oldIndex] = change.newIndex;
-          if(change.newIndex < change.oldIndex){
-            for(let i=change.newIndex;i<change.oldIndex;i++){
-              cellPositions[i] = i+1;
+
+          if(notebook.model){
+            cellPositions = new Array<number>(notebook.model.cells.length);
+            for(let i=0;i<notebook.model.cells.length;i++){
+              cellPositions[i] = i;
             }
-          }else{
-            for(let i=change.oldIndex+1;i<=change.newIndex;i++){
-              cellPositions[i] = i-1;
+            cellPositions[change.oldIndex] = change.newIndex;
+            if(change.newIndex < change.oldIndex){
+              for(let i=change.newIndex;i<change.oldIndex;i++){
+                cellPositions[i] = i+1;
+              }
+            }else{
+              for(let i=change.oldIndex+1;i<=change.newIndex;i++){
+                cellPositions[i] = i-1;
+              }
             }
           }
 
-          // console.log("Relations:", relations);
           console.log(action);
           this.notebookProvenance.pauseObserverExecution = true;
           action
@@ -355,10 +356,11 @@ export class NotebookProvenanceTracker {
               state.cellType = currentCell.type;
               state.moveToIndex = notebook.activeCellIndex;
               state.activeCell = notebook.activeCellIndex;
-              // @ts-ignore
-              state.model = self.notebookProvenance.notebook.model.toJSON();
-              this._prevModel = state.model;
-              state.modelWorkaround++;
+              if(notebook.model){
+                state.model = notebook.model.toJSON();
+                this._prevModel = state.model;
+                state.modelWorkaround++;
+              }
               return state;
             }
           );
@@ -378,10 +380,13 @@ export class NotebookProvenanceTracker {
 
       debugger
       this._prevActiveCellIndex = this.notebookProvenance.notebook.activeCellIndex;
-      // @ts-ignore
-      let cell = notebook.model.cells._cellMap.values()[this._prevActiveCellIndex]
-      if (cell.model) {
-        this._prevActiveCellValue = cell.model.value.text;
+      let cell;
+      if(notebook.model){
+        // @ts-ignore _cellMap DOES exist
+        cell = notebook.model.cells._cellMap.values()[this._prevActiveCellIndex];
+        if (cell.model) {
+          this._prevActiveCellValue = cell.model.value.text;
+        }
       }
     };
     this.notebookProvenance.notebook.model!.cells.changed.connect(cellsChangedListener, this);
@@ -399,15 +404,19 @@ export class NotebookProvenanceTracker {
     // when removing, jupyterlab first calls changeActiveCell where the cellOrder of model.cells does NOT contain the current cell anymore,
     // the cell map on the other hand DOES still contain the cell ==> this solution needed instead of notebook.model!.cells.get(this._prevActiveCellIndex);
 
-    // @ts-ignore
-    let cell = notebook.model.cells._cellMap.values()[this._prevActiveCellIndex];
+    let cell: ICellModel;
+    if(notebook.model){
+      // @ts-ignore _cellMap DOES exist
+      cell = notebook.model.cells._cellMap.values()[this._prevActiveCellIndex];
+    }else{
+      return;
+    }
+
     if(change != null){
-      debugger
       if(change.type == "move"){
         cell = change.newValues[0]; // this is the cell that was active BEFORE changing active cell, but at a different location now
       }
       if(change.type == "remove"){
-        debugger
         return; // do not track cell changes when removing: they are tracked by changeActiveCell already every time
       }
     }
@@ -418,37 +427,18 @@ export class NotebookProvenanceTracker {
       let action = this.notebookProvenance.prov.addAction(
         "Cell value: "+cell.value.text,
         (state:ApplicationState) => {
-          // @ts-ignore
           state.cellValue = cell.value.text;
           this._prevActiveCellValue = state.cellValue; // otherwise e.g. execute+addCell will add a changeCellValue-action two times
-          // this._prevActiveCellIndex = notebook.activeCellIndex;
-          debugger
-          // state.cellType = cell.type;
-          // @ts-ignore
-          // state.model = self.notebookProvenance.notebook.model.toJSON();
-          // this._prevModel = state.model;
-          // if(self._prevModel != null){
-          //   state.model = this._prevModel;
-          // }else{
-          //   // If there has not been a saved model yet
-          //   // @ts-ignore
-          //   state.model = notebook.model.toJSON();
-          //   this._prevModel = state.model;
-          // }
           state.model = this._prevModel;
-          // @ts-ignore
           // e.g. when switching activeCell after changing content and then writing content in the new cell this line is needed to preserve the model that would have existed
-          // test: add cell, change content, click cell above, change content, execute without creating new cell, undo ==> problem
-          this._prevModel = notebook.model.toJSON();
-          state.modelWorkaround++;
-
-
-
+          // test: add cell, change content, click cell above, change content, execute without creating new cell, then click undo ==> problem
+          if(notebook.model){
+            this._prevModel = notebook.model.toJSON();
+            state.modelWorkaround++;
+          }
           return state;
         }
       );
-
-      // // console.log(action);
 
       this.notebookProvenance.pauseObserverExecution = true;
       action
@@ -457,12 +447,6 @@ export class NotebookProvenanceTracker {
         .alwaysStoreState(true)
         .applyAction();
       this.notebookProvenance.pauseObserverExecution = false;
-
-      // this._prevActiveCellIndex = this.notebookProvenance.notebook.activeCellIndex;
-      // // @ts-ignore
-      // if (cell.model) {
-      //   this._prevActiveCellValue = cell.model.value.text;
-      // }
     }
   }
 }
