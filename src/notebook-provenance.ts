@@ -1,19 +1,13 @@
 import {INotebookModel, Notebook} from '@jupyterlab/notebook';
 import {ActionFunctions} from './action-functions';
-import {ISessionContext} from '@jupyterlab/apputils';
-
 import {
   initProvenance,
   Provenance
 } from '@visdesignlab/trrack';
-
 import {NotebookProvenanceTracker} from './provenance-tracker'
 import {provVisUpdate} from "./side-bar";
-
 import {PartialJSONValue} from '@lumino/coreutils';
-
 import {DocumentRegistry} from '@jupyterlab/docregistry';
-
 
 
 /**
@@ -66,11 +60,9 @@ export class NotebookProvenance {
   public pauseTracking: boolean = false;
   public pauseObserverExecution: boolean = false;
 
-  // private _prov: string;
-
 
   // Why is this context not working like app, notebook, sessionContext?
-  constructor(public readonly notebook: Notebook, private sessionContext: ISessionContext, private context: DocumentRegistry.IContext<INotebookModel>) {
+  constructor(public readonly notebook: Notebook, private context: DocumentRegistry.IContext<INotebookModel>) {
     this.init();
   }
 
@@ -99,36 +91,24 @@ export class NotebookProvenance {
       }
     }
 
-    // to check if it loaded: this.prov.graph()
-    // console.log("Graph at beginning:", this.prov.graph())
-
-    this._actionFunctions = new ActionFunctions(this.notebook, this.sessionContext);
+    this._actionFunctions = new ActionFunctions(this.notebook);
 
     this.prov.addObserver(["modelWorkaround"], () => {
-      // provVisUpdate()
-      // console.log(this.prov.graph())
-      // console.log("model observer called");
       debugger
       this.pauseTracking = true;
       if(!this.pauseObserverExecution){
         debugger
         let state = this.prov.current().getState();
-        // @ts-ignore
-        this.notebook.model.fromJSON(state.model); //This takes a LOT of time I think?
-        // @ts-ignore
-        this.notebook.model.cells.get(state.activeCell).value.text = state.cellValue;
+        this.notebook.model!.fromJSON(state.model);
+        this._actionFunctions.cellValue(state.activeCell,state.cellValue)
         this._actionFunctions.changeActiveCell(state.activeCell);
         if(state.activeCell != state.moveToIndex){
           this._actionFunctions.moveCell(state.activeCell, state.moveToIndex);
         }else{
           this._actionFunctions.setCell(state.activeCell, state.cellType);
         }
-        if(state.removeCellIndex){
-          // this._actionFunctions.removeCell(state.removeCellIndex);
-        }
       }
       this.pauseTracking = false;
-      
       provVisUpdate(this._prov);
     });
 
@@ -136,49 +116,12 @@ export class NotebookProvenance {
       // console.log("activeCell observer called");
       this.pauseTracking = true;
       if(!this.pauseObserverExecution){
-
         let state = this.prov.current().getState();
-        // @ts-ignore
-        //this.notebook.model.fromJSON(state.model); // This is needed because otherwise sometimes clicking on "addCell" won't change the state of the notebook
-        // @ts-ignore
-        // this.notebook.model.cells.get(state.activeCell).value.text = state.cellValue;
         this._actionFunctions.changeActiveCell(state.activeCell);
       }
       this.pauseTracking = false;
-      
       provVisUpdate(this._prov);
-
     });
-
-    // this.prov.addObserver(["cellType"], () => {
-    //   console.log("cellType observer called");
-    //   this.pauseTracking = true;
-    //   if(!this.pauseObserverExecution){
-    //
-    //     let state = this.prov.current().getState();
-    //     // @ts-ignore
-    //     this.notebook.model.cells.get(state.activeCell).type = state.cellType;
-    //     this._actionFunctions.setCell(state.activeCell, state.cellType);
-    //   }
-    //
-    //   provVisUpdate(this._prov);
-    //   this.pauseTracking = false;
-    // });
-    //
-    // this.prov.addObserver(["cellValue"], () => {
-    //   console.log("cellValue observer called");
-    //   this.pauseTracking = true;
-    //   if(!this.pauseObserverExecution){
-    //
-    //     let state = this.prov.current().getState();
-    //     // @ts-ignore
-    //     this.notebook.model.fromJSON(state.model);
-    //     // @ts-ignore
-    //     this.notebook.model.cells.get(state.activeCell).value.text = state.cellValue;
-    //   }
-    //   this.pauseTracking = false;
-    //   provVisUpdate(this._prov);
-    // });
 
     // Call this when all the observers are defined.
     // This is optional and only used when you want to enable sharing and loading states from URL.
@@ -201,16 +144,4 @@ export class NotebookProvenance {
   public get prov(): Provenance<ApplicationState, EventTypes, ApplicationExtra> {
     return this._prov;
   }
-
-  // public save() {
-  //
-  //   console.log("SAVING     SAVING     SAVING");
-  //   // this.notebookModelCache.get(this.notebook)
-  // }
-
-
-  // public get graph(): ProvenanceGraph {
-  //     return this._graph as ProvenanceGraph;
-  // }
-
 }

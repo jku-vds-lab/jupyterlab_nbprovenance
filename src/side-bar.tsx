@@ -1,7 +1,4 @@
 "use strict";
-
-// import * as React from 'react';
-// import * as ReactDOM from 'react-dom';
 import {EventTypes, NotebookProvenance} from './notebook-provenance';
 import { LabShell } from "@jupyterlab/application";
 import { NotebookPanel, Notebook, INotebookTracker } from '@jupyterlab/notebook';
