@@ -46,7 +46,7 @@ export interface ApplicationState {
 
 export interface ApplicationExtra {
   changedCellId: number;
-  relations?: number[]; // Save the position changes. if 0 at index 0, then cell at 0 stays at 0. If 5 at index 0, then the cell has moved from position 0 to position 5 in this event
+  cellPositions?: number[]; // Save the position changes. if 0 at index 0, then cell at 0 stays at 0. If 5 at index 0, then the cell has moved from position 0 to position 5 in this event
 };
 
 /**

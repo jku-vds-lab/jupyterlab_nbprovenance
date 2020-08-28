@@ -202,6 +202,7 @@ export class NotebookProvenanceTracker {
 
 
       let action;
+      let cellPositions;
       switch (change.type) {
         case 'add':
           action = this.notebookProvenance.prov.addAction(
@@ -224,14 +225,14 @@ export class NotebookProvenanceTracker {
           // all in between are changed. If index is decreased(new index < old index), others are increased. If index is increased, others are decreased
           // @ts-ignore
           let length = self.notebookProvenance.notebook.model.cells.length-1;
-          let relationsAdd = new Array<number>(length);
+          cellPositions = new Array<number>(length);
           // @ts-ignore
           for(let i=0;i<length;i++){
-            relationsAdd[i] = i;
+            cellPositions[i] = i;
           }
 
           for(let i=change.newIndex;i<length;i++){
-            relationsAdd[i] = i+1;
+            cellPositions[i] = i+1;
           }
 
           // console.log("Relations:", relationsAdd);
@@ -241,7 +242,7 @@ export class NotebookProvenanceTracker {
           action
             .addExtra({
               changedCellId: change.newIndex,
-              relations: relationsAdd
+              cellPositions: cellPositions
             })
             .addEventType("addCell")
             .alwaysStoreState(true)
@@ -265,10 +266,33 @@ export class NotebookProvenanceTracker {
             }
           );
 
+
+          // moved from change.oldIndex to change.newIndex
+          // all in between are changed. If index is decreased(new index < old index), others are increased. If index is increased, others are decreased
+          // @ts-ignore
+          cellPositions = new Array<number>(self.notebookProvenance.notebook.model.cells.length);
+          // @ts-ignore
+          for(let i=0;i<self.notebookProvenance.notebook.model.cells.length;i++){
+            cellPositions[i] = i;
+          }
+          cellPositions[change.oldIndex] = change.newIndex;
+          if(change.newIndex < change.oldIndex){
+            for(let i=change.newIndex;i<change.oldIndex;i++){
+              cellPositions[i] = i+1;
+            }
+          }else{
+            for(let i=change.oldIndex+1;i<=change.newIndex;i++){
+              cellPositions[i] = i-1;
+            }
+          }
+
           console.log(action);
           this.notebookProvenance.pauseObserverExecution = true;
           action
-            .addExtra({changedCellId: change.newIndex})
+            .addExtra({
+              changedCellId: change.newIndex,
+              cellPositions: cellPositions
+            })
             .addEventType("removeCell")
             .alwaysStoreState(true)
             .applyAction();
@@ -293,19 +317,19 @@ export class NotebookProvenanceTracker {
           // moved from change.oldIndex to change.newIndex
           // all in between are changed. If index is decreased(new index < old index), others are increased. If index is increased, others are decreased
           // @ts-ignore
-          let relations = new Array<number>(self.notebookProvenance.notebook.model.cells.length);
+          cellPositions = new Array<number>(self.notebookProvenance.notebook.model.cells.length);
           // @ts-ignore
           for(let i=0;i<self.notebookProvenance.notebook.model.cells.length;i++){
-            relations[i] = i;
+            cellPositions[i] = i;
           }
-          relations[change.oldIndex] = change.newIndex;
+          cellPositions[change.oldIndex] = change.newIndex;
           if(change.newIndex < change.oldIndex){
             for(let i=change.newIndex;i<change.oldIndex;i++){
-              relations[i] = i+1;
+              cellPositions[i] = i+1;
             }
           }else{
             for(let i=change.oldIndex+1;i<=change.newIndex;i++){
-              relations[i] = i-1;
+              cellPositions[i] = i-1;
             }
           }
 
@@ -315,7 +339,7 @@ export class NotebookProvenanceTracker {
           action
             .addExtra({
               changedCellId: change.newIndex,
-              relations: relations
+              cellPositions: cellPositions
             })
             .addEventType("moveCell")
             .alwaysStoreState(true)
