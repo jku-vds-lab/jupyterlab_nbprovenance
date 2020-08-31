@@ -32,7 +32,7 @@ export class NotebookProvenanceTracker {
       }
       // console.log("activeCellChanged");
 
-      debugger;
+      ;
       this.trackCellValueChanged(notebook);
 
 
@@ -61,7 +61,7 @@ export class NotebookProvenanceTracker {
       // the prevActiveCellValue is used to store the value of the newly clicked cell --> stores the value before potentially changing the cell value
       // so the value of the cell of PREVIOUS index is compared with the prevActiveCellVALUE when clicking a new cell
       this._prevActiveCellIndex = notebook.activeCellIndex;
-      debugger;
+      ;
       if (notebook.model) {
         // @ts-ignore   _cellMap DOES exist
         let cell = notebook.model.cells._cellMap.values()[this._prevActiveCellIndex];
@@ -89,7 +89,7 @@ export class NotebookProvenanceTracker {
         return;
       }
 
-      debugger;
+      ;
       // Track if cell value has been changed before adding e.g. adding a new cell
       this.trackCellValueChanged(notebook);
 
@@ -110,7 +110,7 @@ export class NotebookProvenanceTracker {
         (state: ApplicationState) => {
           state.model = notebook.model!.toJSON();
           this._prevModel = state.model;
-          debugger;
+          ;
           state.cellValue = notebook.model!.cells.get(notebook.activeCellIndex).value.text; // save the NEW cells value
           state.moveToIndex = notebook.activeCellIndex;
           state.activeCell = notebook.activeCellIndex;
@@ -165,7 +165,7 @@ export class NotebookProvenanceTracker {
       // console.log("_onCellsChanged");
       // console.log(change);
 
-      debugger;
+      ;
       // Track if cell value has been changed before adding e.g. adding a new cell
       this.trackCellValueChanged(notebook, change);
 
@@ -237,7 +237,7 @@ export class NotebookProvenanceTracker {
           );
 
 
-          debugger;
+          ;
           if (notebook.model) {
             length = notebook.model.cells.length + 1; // because the remove has already decreased the size, but the size before that is needed
             cellPositions = new Array<number>(length);
@@ -342,7 +342,7 @@ export class NotebookProvenanceTracker {
           return;
       }
 
-      debugger;
+      ;
       this._prevActiveCellIndex = this.notebookProvenance.notebook.activeCellIndex;
       let cell;
       if (notebook.model) {

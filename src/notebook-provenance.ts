@@ -62,13 +62,12 @@ export class NotebookProvenance {
 
 
   // Why is this context not working like app, notebook, sessionContext?
-  constructor(public readonly notebook: Notebook, private context: DocumentRegistry.IContext<INotebookModel>) {
+  constructor(public readonly notebook: Notebook, private context: DocumentRegistry.IContext<INotebookModel>,private provenanceView: any) {
     this.init();
   }
 
   private init() {
     this._prov = initProvenance<ApplicationState, EventTypes, ApplicationExtra>(initialState, false);
-
 
     // this._prov = initProvenance<ApplicationState, EventTypes, ApplicationExtra>(initialState, true, true, {
     //   apiKey: "AIzaSyCVqzgH7DhN9roG9gaFqGMqh-zj3vd8tww",
@@ -94,10 +93,10 @@ export class NotebookProvenance {
     this._actionFunctions = new ActionFunctions(this.notebook);
 
     this.prov.addObserver(["modelWorkaround"], () => {
-      debugger
+      
       this.pauseTracking = true;
       if(!this.pauseObserverExecution){
-        debugger
+        
         let state = this.prov.current().getState();
         this.notebook.model!.fromJSON(state.model);
         this._actionFunctions.cellValue(state.activeCell,state.cellValue)
@@ -109,7 +108,11 @@ export class NotebookProvenance {
         }
       }
       this.pauseTracking = false;
-      provVisUpdate(this._prov);
+
+      // Only update when it is visible --> performance
+      if(this.provenanceView.isVisible){
+        provVisUpdate(this._prov);
+      }
     });
 
     this.prov.addObserver(["activeCell"], () => {
@@ -120,7 +123,11 @@ export class NotebookProvenance {
         this._actionFunctions.changeActiveCell(state.activeCell);
       }
       this.pauseTracking = false;
-      provVisUpdate(this._prov);
+
+      debugger
+      if(this.provenanceView.isVisible){
+        provVisUpdate(this._prov);
+      }
     });
 
     // Call this when all the observers are defined.
