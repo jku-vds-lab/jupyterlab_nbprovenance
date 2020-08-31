@@ -23,7 +23,7 @@ function activate(app: JupyterLab, restorer: ILayoutRestorer, nbTracker: INotebo
   let provenanceView: Widget;
   nbTracker.widgetAdded.connect((_: INotebookTracker, nbPanel: NotebookPanel) => {
     // wait until the session with the notebook model is ready
-    nbPanel.sessionContext.ready.then(() => { // TODO: check if sessionContext is really the equivalent of session ... "ClientSession to SessionContext"
+    nbPanel.sessionContext.ready.then(() => {
       const notebook: Notebook = nbPanel.content;
       if (!notebookModelCache.has(notebook)) {
         notebookModelCache.set(notebook, new NotebookProvenance(notebook, nbPanel.context, provenanceView));
@@ -35,14 +35,8 @@ function activate(app: JupyterLab, restorer: ILayoutRestorer, nbTracker: INotebo
   provenanceView.id = 'nbprovenance-view';
   provenanceView.title.caption = 'Notebook Provenance';
   provenanceView.title.iconClass = 'jp-nbprovenanceIcon';
-
-  // @ts-ignore
   restorer.add(provenanceView, 'nbprovenance_view');
-
-  // Rank has been chosen somewhat arbitrarily
-  // app.shell.addToLeftArea(provenanceView, { rank: 700 }); // this has been reworked
-  // @ts-ignore
-  app.shell.add(provenanceView, 'right', {rank: 700});
+  app.shell.add(provenanceView, 'right', {rank: 700}); // rank was chosen arbitrarily
 }
 
 

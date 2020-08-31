@@ -39,9 +39,6 @@ let notebookProvenance: NotebookProvenance | null;
  * The main view for the notebook provenance.
  */
 export class SideBar extends Widget {
-  // private notebookProvenance: NotebookProvenance | null = null;
-
-
   constructor(shell: LabShell, nbTracker: INotebookTracker) {
     super();
 
@@ -90,8 +87,9 @@ export class SideBar extends Widget {
   async onUpdateRequest(msg: Message): Promise<void> {
     console.log("onUpdateRequest");
     debugger
-    // @ts-ignore
-    provVisUpdate(notebookProvenance.prov);
+    if(notebookProvenance){
+      provVisUpdate(notebookProvenance.prov);
+    }
   }
 
   /**
@@ -102,10 +100,10 @@ export class SideBar extends Widget {
    */
   protected onBeforeShow(msg: Message): void {
     console.log("onBeforeShow");
-    // @ts-ignore
-    provVisUpdate(notebookProvenance.prov);
+    if(notebookProvenance){
+      provVisUpdate(notebookProvenance.prov);
+    }
   }
-
 }
 
 
@@ -113,11 +111,11 @@ export class SideBar extends Widget {
 // Create function to pass to the ProvVis library for when a node is selected in the graph.
 // In this case: jump to clicked node
 let visCallback = function(newNode: NodeID) {
-    // @ts-ignore
-    notebookProvenance.prov.goToNode(newNode);
-    // Incase the state doesn't change and the observers aren't called, updating the ProvVis here.
-    // @ts-ignore
-    provVisUpdate(notebookProvenance.prov);
+    if(notebookProvenance){
+      notebookProvenance.prov.goToNode(newNode);
+      // Incase the state doesn't change and the observers aren't called, updating the ProvVis here.
+      provVisUpdate(notebookProvenance.prov);
+    }
 };
 
 export function provVisUpdate(prov: Provenance<ApplicationState, EventTypes, ApplicationExtra>) {

@@ -132,7 +132,7 @@ export class NotebookProvenance {
 
     // Call this when all the observers are defined.
     // This is optional and only used when you want to enable sharing and loading states from URL.
-    // Refere documentation for advanced usage scenario.
+    // Refer documentation for advanced usage scenario.
     this.prov.done();
 
     this._nbtracker = new NotebookProvenanceTracker(this);
