@@ -6,5 +6,5 @@ Tracking user interactions in Jupyter notebooks in an interaction provenance gra
 
 * [JupyterLab](http://jupyterlab.readthedocs.io/en/latest/getting_started/installation.html)
 
-## Attrubution
+## Attributions
 This extension uses icons by [fontawesome.com](https://fontawesome.com/), available under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
