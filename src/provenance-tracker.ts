@@ -114,7 +114,7 @@ export class NotebookProvenanceTracker {
           state.cellValue = notebook.model!.cells.get(notebook.activeCellIndex).value.text; // save the NEW cells value
           state.moveToIndex = notebook.activeCellIndex;
           state.activeCell = notebook.activeCellIndex;
-          state.modelWorkaround++;
+          state.modelWorkaround = Date.now();
           return state;
         }
       );
@@ -185,7 +185,7 @@ export class NotebookProvenanceTracker {
               if (notebook.model) {
                 state.model = notebook.model.toJSON();
                 this._prevModel = state.model;
-                state.modelWorkaround++;
+                state.modelWorkaround = Date.now();
               }
               return state;
             }
@@ -230,7 +230,7 @@ export class NotebookProvenanceTracker {
               if (notebook.model) {
                 state.model = notebook.model.toJSON();
                 this._prevModel = state.model;
-                state.modelWorkaround++;
+                state.modelWorkaround = Date.now();;
               }
               return state;
             }
@@ -273,7 +273,7 @@ export class NotebookProvenanceTracker {
               if (notebook.model) {
                 state.model = notebook.model.toJSON();
                 this._prevModel = state.model;
-                state.modelWorkaround++;
+                state.modelWorkaround = Date.now();;
               }
               return state;
             }
@@ -323,7 +323,7 @@ export class NotebookProvenanceTracker {
               if (notebook.model) {
                 state.model = notebook.model.toJSON();
                 this._prevModel = state.model;
-                state.modelWorkaround++;
+                state.modelWorkaround = Date.now();;
               }
               return state;
             }
@@ -398,7 +398,7 @@ export class NotebookProvenanceTracker {
           // test: add cell, change content, click cell above, change content, execute without creating new cell, then click undo ==> problem
           if (notebook.model) {
             this._prevModel = notebook.model.toJSON();
-            state.modelWorkaround++;
+            state.modelWorkaround = Date.now();;
           }
           return state;
         }

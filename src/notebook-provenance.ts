@@ -15,7 +15,7 @@ import {DocumentRegistry} from '@jupyterlab/docregistry';
  */
 export interface ApplicationState {
   model: PartialJSONValue;
-  modelWorkaround: number; // only counting up could lead to a problem when working on parallel timelines. Veery rarely though.
+  modelWorkaround: number; // only counting up could lead to a problem when working on parallel timelines. ==> timestamps
   activeCell: number;
   cellValue: string;
   cellType: string;
