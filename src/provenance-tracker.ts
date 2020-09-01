@@ -1,7 +1,7 @@
 import { Notebook, NotebookActions } from '@jupyterlab/notebook';
 import { IObservableList } from '@jupyterlab/observables';
 import { ICellModel, Cell } from '@jupyterlab/cells';
-import { ApplicationState, NotebookProvenance} from './notebook-provenance';
+import {ApplicationState, NotebookProvenance} from './notebook-provenance';
 import { toArray } from '@lumino/algorithm';
 import {PartialJSONValue} from '@lumino/coreutils';
 
@@ -10,9 +10,12 @@ import {PartialJSONValue} from '@lumino/coreutils';
  */
 export class NotebookProvenanceTracker {
   // the initial values are needed because in new notebooks the very first change would not be tracked otherwise
-  private _prevActiveCellValue: string = "";
-  private _prevActiveCellIndex: number = 0;
-  private _prevModel: PartialJSONValue = Object();
+  public _prevActiveCellValue: string = "";
+  public _prevActiveCellIndex: number = 0;
+  public _prevModel: PartialJSONValue = Object();
+  // public _prevValuesLoadedByProvenance: Boolean;
+
+
 
   /**
    *
@@ -61,7 +64,7 @@ export class NotebookProvenanceTracker {
       // the prevActiveCellValue is used to store the value of the newly clicked cell --> stores the value before potentially changing the cell value
       // so the value of the cell of PREVIOUS index is compared with the prevActiveCellVALUE when clicking a new cell
       this._prevActiveCellIndex = notebook.activeCellIndex;
-      ;
+      // this._prevValuesLoadedByProvenance = false;
       if (notebook.model) {
         // @ts-ignore   _cellMap DOES exist
         let cell = notebook.model.cells._cellMap.values()[this._prevActiveCellIndex];
@@ -110,7 +113,6 @@ export class NotebookProvenanceTracker {
         (state: ApplicationState) => {
           state.model = notebook.model!.toJSON();
           this._prevModel = state.model;
-          ;
           state.cellValue = notebook.model!.cells.get(notebook.activeCellIndex).value.text; // save the NEW cells value
           state.moveToIndex = notebook.activeCellIndex;
           state.activeCell = notebook.activeCellIndex;
@@ -130,6 +132,7 @@ export class NotebookProvenanceTracker {
       this.notebookProvenance.pauseObserverExecution = false;
 
       this._prevActiveCellIndex = this.notebookProvenance.notebook.activeCellIndex;
+      // this._prevValuesLoadedByProvenance = false;
       if (notebook.model) {
         // @ts-ignore   _cellMap DOES exist
         let cell = notebook.model.cells._cellMap.values()[this._prevActiveCellIndex];
@@ -164,8 +167,10 @@ export class NotebookProvenanceTracker {
 
       // console.log("_onCellsChanged");
       // console.log(change);
+      debugger;
 
-      ;
+
+
       // Track if cell value has been changed before adding e.g. adding a new cell
       this.trackCellValueChanged(notebook, change);
 
@@ -342,8 +347,8 @@ export class NotebookProvenanceTracker {
           return;
       }
 
-      ;
       this._prevActiveCellIndex = this.notebookProvenance.notebook.activeCellIndex;
+      // this._prevValuesLoadedByProvenance = false;
       let cell;
       if (notebook.model) {
         // @ts-ignore _cellMap DOES exist
@@ -368,22 +373,35 @@ export class NotebookProvenanceTracker {
     // when removing, jupyterlab first calls changeActiveCell where the cellOrder of model.cells does NOT contain the current cell anymore,
     // the cell map on the other hand DOES still contain the cell ==> this solution needed instead of notebook.model!.cells.get(this._prevActiveCellIndex);
 
+    // Problem: When the previous-values are loaded by an observer call beacuse of switching to a node, then this order of Cells does not fit anymore
+    // ==> notebook.model!.cells.get(this._prevActiveCellIndex) after all
+    // try the get-variant first, if it is null it means the remove problem exists ==> try the other variant
+
+
+
     let cell: ICellModel;
     if (notebook.model) {
-      // @ts-ignore _cellMap DOES exist
-      cell = notebook.model.cells._cellMap.values()[this._prevActiveCellIndex];
+      cell = notebook.model.cells.get(this._prevActiveCellIndex);
+      // if(cell == null){
+      //   // @ts-ignore _cellMap DOES exist
+      //   cell = notebook.model.cells._cellMap.values()[this._prevActiveCellIndex];
+      // }
     } else {
       return;
     }
 
+    debugger
     if (change != null) {
       if (change.type == "move") {
         cell = change.newValues[0]; // this is the cell that was active BEFORE changing active cell, but at a different location now
       }
       if (change.type == "remove") {
-        return; // do not track cell changes when removing: they are tracked by changeActiveCell already every time
+        // return; // do not track cell changes when removing: they are tracked by changeActiveCell already every time
+        cell = change.oldValues[0];
       }
     }
+
+
 
     if (cell && this._prevActiveCellValue != cell.value.text) {
       // if so add to prov
@@ -392,7 +410,14 @@ export class NotebookProvenanceTracker {
         "Cell value: " + cell.value.text,
         (state: ApplicationState) => {
           state.cellValue = cell.value.text;
-          this._prevActiveCellValue = state.cellValue; // otherwise e.g. execute+addCell will add a changeCellValue-action two times
+          debugger
+          if(change && change.type == "remove"){
+            this._prevActiveCellIndex = change.oldIndex; // otherwise the index is one too low
+            state.activeCell = change.oldIndex;
+            state.moveToIndex = change.oldIndex;
+          }else{
+            this._prevActiveCellValue = state.cellValue; // otherwise e.g. execute+addCell will add a changeCellValue-action two times
+          }
           state.model = this._prevModel;
           // e.g. when switching activeCell after changing content and then writing content in the new cell this line is needed to preserve the model that would have existed
           // test: add cell, change content, click cell above, change content, execute without creating new cell, then click undo ==> problem
@@ -405,8 +430,12 @@ export class NotebookProvenanceTracker {
       );
 
       this.notebookProvenance.pauseObserverExecution = true;
+      let index = this._prevActiveCellIndex;
+      if(change && change.type == "remove"){
+        index = change.oldIndex;
+      }
       action
-        .addExtra({changedCellId: this._prevActiveCellIndex})
+        .addExtra({changedCellId: index})
         .addEventType("changeCellValue")
         .alwaysStoreState(true)
         .applyAction();

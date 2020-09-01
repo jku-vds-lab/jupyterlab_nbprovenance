@@ -96,7 +96,6 @@ export class NotebookProvenance {
       
       this.pauseTracking = true;
       if(!this.pauseObserverExecution){
-        
         let state = this.prov.current().getState();
         this.notebook.model!.fromJSON(state.model);
         this._actionFunctions.cellValue(state.activeCell,state.cellValue)
@@ -106,6 +105,12 @@ export class NotebookProvenance {
         }else{
           this._actionFunctions.setCell(state.activeCell, state.cellType);
         }
+
+        // When the user clicks on a past state and then changes the cell value, the old values have to be known:
+        this._nbtracker._prevActiveCellIndex = state.activeCell;
+        this._nbtracker._prevActiveCellValue = state.cellValue;
+        this._nbtracker._prevModel = state.model;
+        // this._nbtracker._prevValuesLoadedByProvenance = true;
       }
       this.pauseTracking = false;
 
@@ -121,6 +126,12 @@ export class NotebookProvenance {
       if(!this.pauseObserverExecution){
         let state = this.prov.current().getState();
         this._actionFunctions.changeActiveCell(state.activeCell);
+
+        // When the user clicks on a past state and then changes the cell value, the old values have to be known:
+        this._nbtracker._prevActiveCellIndex = state.activeCell;
+        this._nbtracker._prevActiveCellValue = state.cellValue;
+        this._nbtracker._prevModel = state.model;
+        // this._nbtracker._prevValuesLoadedByProvenance = true;
       }
       this.pauseTracking = false;
 
