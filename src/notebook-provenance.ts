@@ -135,7 +135,7 @@ export class NotebookProvenance {
       }
       this.pauseTracking = false;
 
-      debugger
+
       if(this.provenanceView.isVisible){
         provVisUpdate(this._prov);
       }

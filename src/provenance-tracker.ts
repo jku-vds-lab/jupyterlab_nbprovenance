@@ -167,7 +167,7 @@ export class NotebookProvenanceTracker {
 
       // console.log("_onCellsChanged");
       // console.log(change);
-      debugger;
+      ;
 
 
 
@@ -390,7 +390,7 @@ export class NotebookProvenanceTracker {
       return;
     }
 
-    debugger
+
     if (change != null) {
       if (change.type == "move") {
         cell = change.newValues[0]; // this is the cell that was active BEFORE changing active cell, but at a different location now
@@ -410,7 +410,7 @@ export class NotebookProvenanceTracker {
         "Cell value: " + cell.value.text,
         (state: ApplicationState) => {
           state.cellValue = cell.value.text;
-          debugger
+
           if(change && change.type == "remove"){
             this._prevActiveCellIndex = change.oldIndex; // otherwise the index is one too low
             state.activeCell = change.oldIndex;
