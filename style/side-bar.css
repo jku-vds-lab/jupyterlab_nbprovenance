@@ -4,7 +4,7 @@
     flex-direction: column;
 }
 
-.jp-nbprovenance-view p{
+.jp-nbprovenance-view p .notebookTitle{
     margin-top: 10px;
     margin-bottom: 10px;
 }
