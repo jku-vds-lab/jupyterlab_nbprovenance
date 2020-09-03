@@ -34,6 +34,7 @@ import {style} from "typestyle";
 
 
 let notebookProvenance: NotebookProvenance | null;
+let eventConfig: EventConfig<any>;
 
 /**
  * The main view for the notebook provenance.
@@ -53,6 +54,10 @@ export class SideBar extends Widget {
           notebookProvenance = (notebookModelCache.has(notebook)) ? notebookModelCache.get(notebook)! : null;
 
           this.summary.innerText = "Provenance of " + (notebookProvenance!.notebook.parent! as NotebookPanel).context.path;
+          debugger
+          if(notebookProvenance){
+            eventConfig = createEventConfig(notebookProvenance.prov);
+          }
           this.update();
         }
       });
@@ -126,9 +131,6 @@ let visCallback = function(newNode: NodeID) {
 
 export function provVisUpdate(prov: Provenance<ApplicationState, EventTypes, ApplicationExtra>) {
   console.log("UPDATING THE VISUALIZATION");
-  let eventConfig: EventConfig<any>;
-  eventConfig = createEventConfig(prov);
-
   let config: ProvVisConfig = {
     cellsVisArea: 50,
     eventConfig: eventConfig,
@@ -269,7 +271,7 @@ function createEventConfig<E extends string>(prov: Provenance<unknown, string, u
 
   let conf: EventConfig<E> = {};
 
-  debugger
+
   for (let j of EventTypes) {
     conf[j] = {}
   }
@@ -316,55 +318,5 @@ function createEventConfig<E extends string>(prov: Provenance<unknown, string, u
   conf[EventTypes[6]].bundleGlyph = conf[EventTypes[6]].backboneGlyph;
   conf[EventTypes[6]].regularGlyph = conf[EventTypes[6]].backboneGlyph;
 
-
-  // let counter = 0;
-  //
-  // console.log("createEventConfig");
-  // for (let j of EventTypes) {
-  //   conf[j] = {}
-  //   conf[j].backboneGlyph = (
-  //     moveSymbol()
-  //   )
-  //
-  //   conf[j].bundleGlyph = (
-  //     <path
-  //       strokeWidth={2}
-  //       className={style({
-  //         fill: 'white',
-  //         stroke: 'rgb(88, 22, 22)'
-  //       })}
-  //       d={symbols[counter]}
-  //     />
-  //   )
-  //
-  //   conf[j].currentGlyph = (
-  //     <path
-  //       strokeWidth={2}
-  //       className={style({
-  //         fill: 'rgb(88, 22, 22)',
-  //         stroke: 'rgb(88, 22, 22)'
-  //       })}
-  //       d={symbols[counter]}
-  //     />
-  //   )
-  //
-  //   conf[j].regularGlyph = (
-  //     <path
-  //       strokeWidth={2}
-  //       className={style({
-  //         fill: 'white',
-  //         stroke: 'rgb(88, 22, 22)'
-  //       })}
-  //       d={symbols[counter]}
-  //     />
-  //   )
-  //
-  //   counter++;
-  // }
   return conf;
 }
-
-
-
-
-
