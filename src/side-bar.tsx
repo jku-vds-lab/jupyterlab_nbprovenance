@@ -134,6 +134,7 @@ export function provVisUpdate(prov: Provenance<ApplicationState, EventTypes, App
   let config: ProvVisConfig = {
     cellsVisArea: 50,
     eventConfig: eventConfig,
+    legend: true
     // maxNumberOfCells: notebookProvenance!.notebook.model!.cells.length
   };
 
