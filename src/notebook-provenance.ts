@@ -42,8 +42,8 @@ const initialState: ApplicationState = {
   removeCellIndex: 0
 };
 
-export type EventTypes = "Change active cell" | "executeCell" | "addCell" | "removeCell" | "moveCell" | "setCell" | "changeCellValue";
-export const EventTypes = ["Change active cell", "executeCell", "addCell", "removeCell", "moveCell", "setCell", "changeCellValue"];
+export type EventTypes = "Active cell" | "executeCell" | "addCell" | "removeCell" | "moveCell" | "setCell" | "changeCellValue";
+export const EventTypes = ["Active cell", "executeCell", "addCell", "removeCell", "moveCell", "setCell", "changeCellValue"];
 
 
 /**

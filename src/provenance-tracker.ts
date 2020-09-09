@@ -54,7 +54,7 @@ export class NotebookProvenanceTracker {
       this.notebookProvenance.pauseObserverExecution = true;
       action
         .addExtra({changedCellId: this.notebookProvenance.notebook.activeCellIndex})
-        .addEventType("Change active cell")
+        .addEventType("Active cell")
         .alwaysStoreState(true)
         .isEphemeral(true)
         .applyAction();
@@ -109,7 +109,7 @@ export class NotebookProvenanceTracker {
       }
 
       let action = this.notebookProvenance.prov.addAction(
-        "executeCell",
+        "Cell executed",
         (state: ApplicationState) => {
           state.model = notebook.model!.toJSON();
           this._prevModel = state.model;
@@ -181,7 +181,7 @@ export class NotebookProvenanceTracker {
       switch (change.type) {
         case 'add':
           action = this.notebookProvenance.prov.addAction(
-            "Add cell",
+            "Cell added",
             (state: ApplicationState) => {
               state.cellValue = currentCell.value.text;
               state.cellType = currentCell.type;
@@ -225,7 +225,7 @@ export class NotebookProvenanceTracker {
           break;
         case 'remove':
           action = this.notebookProvenance.prov.addAction(
-            "removeCell",
+            "Cell removed",
             (state: ApplicationState) => {
               state.cellValue = currentCell.value.text;
               state.cellType = currentCell.type;
@@ -269,7 +269,7 @@ export class NotebookProvenanceTracker {
           break;
         case 'move':
           action = this.notebookProvenance.prov.addAction(
-            "moveCell",
+            "Cell moved",
             (state: ApplicationState) => {
               state.cellValue = currentCell.value.text;
               state.cellType = currentCell.type;
@@ -319,7 +319,7 @@ export class NotebookProvenanceTracker {
         case 'set': // caused by, e.g., change cell type
 
           action = this.notebookProvenance.prov.addAction(
-            "setCell",
+            "Cell type changed",
             (state: ApplicationState) => {
               state.cellValue = currentCell.value.text;
               state.cellType = currentCell.type;
