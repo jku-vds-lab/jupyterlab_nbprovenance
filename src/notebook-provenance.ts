@@ -152,6 +152,26 @@ export class NotebookProvenance {
   protected saveProvenanceGraph() {
     console.log("Saving provenance graph in notebookfile");
 
+    // var x =this._prov.graph()
+    // x
+    // x.nodes.oneNode.state.model.metadata.provenance.... sometimes there is .provenance ==> this is a problem, I do NOT need to save this, it adds a LOT of data that is absolutely redundant and useless
+    
+    let graph = this._prov.graph();
+    let nodesArray = Object.values(graph.nodes);
+
+    nodesArray.forEach(node => {
+      let state = node.getState();
+      if(state){
+        if(state.model){
+          if(state.model.hasOwnProperty("metadata")){
+            //@ts-ignore   only a quickfix for now
+            state.model.metadata.provenance = null;
+          }
+        }
+      }
+    })
+
+
     this.notebook.model!.metadata.set('provenance', this._prov.exportProvenanceGraph());
   }
 
