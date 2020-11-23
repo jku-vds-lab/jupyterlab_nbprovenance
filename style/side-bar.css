@@ -1,58 +1,10 @@
 .jp-nbprovenance-view {
     display: flex;
+    overflow: scroll;
+    flex-direction: column;
 }
 
-.jp-nbprovenance-view .jp-nbprovenance-graph {
-    background: var(--jp-toolbar-background);
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex: 1 1 auto;
-}
-
-.jp-nbprovenance-view .jp-nbprovenance-nograph {
-    margin: 10px;
-    color: var(--jp-ui-font-color1);
-    font-size: var(--jp-ui-font-size1);
-}
-
-.node {
-    fill: lightsteelblue;
-    stroke: steelblue;
-    cursor: pointer;
-}
-
-.node circle {
-    stroke-width: .3px;
-}
-
-.node.branch-active {
-    fill: yellow;
-    background-color: #333;
-}
-
-.node.branch-active text {
-    display: block;
-}
-
-.node.node-active {
-    fill: blue;
-    stroke: darkblue;
-}
-
-.node text {
-    display: none;
-    fill: black;
-    stroke-width: 0;
-    font-family: sans-serif;
-}
-
-.link {
-    fill: none;
-    stroke: black;
-    stroke-width: .5px;
-}
-
-.link.active {
-    stroke: black;
+.jp-nbprovenance-view p .notebookTitle{
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
