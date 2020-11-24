@@ -9,6 +9,8 @@ This extension listens to notebook change events from JupyterLab and stores thes
 The [trrack-notebook-vis](https://github.com/JKU-ICG/trrack-notebook-vis) library takes the stored provenance information to visualize the provenacne graph in a sidepanel in JupyterLab.
 From the visualization, users can browse the notebook's history, filter it, and switch between states.
 
+![Extension Demonstration](demo.gif)
+
 ## Install
 
 Install [JupyterLab](http://jupyterlab.readthedocs.io/en/latest/getting_started/installation.html) if you haven't already.
