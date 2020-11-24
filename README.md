@@ -5,9 +5,9 @@
 An extension for JupyterLab (v2+) to track interaction provenance in Jupyter notebooks.  
 The provenance information is stored using the provenance tracking library [trrack]((https://github.com/visdesignlab/trrack)).
 
-this extension does
-vis by blurb
-TODO
+This extension listens to notebook change events from JupyterLab and stores these changes as a provenance graph with Trrack.
+The [trrack-notebook-vis](https://github.com/JKU-ICG/trrack-notebook-vis) library takes the stored provenance information to visualize the provenacne graph in a sidepanel in JupyterLab.
+From the visualization, users can browse the notebook's history, filter it, and switch between states.
 
 ## Install
 
