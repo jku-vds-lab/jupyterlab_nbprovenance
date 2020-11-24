@@ -1,6 +1,6 @@
 # JupyterLab Notebook Provenance
 
- ![npm (scoped)](https://img.shields.io/npm/v/jku-icg/trrack-notebook-vis)
+ ![npm (scoped)](https://img.shields.io/npm/v/jku-icg/jupyterlab_nbprovenance)
 
 An extension for JupyterLab (v2+) to track interaction provenance in Jupyter notebooks.  
 The provenance information is stored using the provenance tracking library [trrack]((https://github.com/visdesignlab/trrack)).
