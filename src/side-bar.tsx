@@ -16,7 +16,7 @@ import {
   EventConfig,
   ProvVisConfig,
   ProvVisCreator
-} from "@visdesignlab/trrack-vis";
+} from "@jku-icg/trrack-notebook-vis";
 
 import {
     symbol,
