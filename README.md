@@ -24,13 +24,8 @@ jupyter labextension install @jku-icg/jupyterlab_nbprovenance
 1. Prepare Environment (optional)
 
     ```sh
-    # Create
     conda create --name notebook_provenance python=3.8.5
-
-    # Enable
     conda activate notebook_provenance
-
-    #Install requirements (jupyterlab)
     conda install jupyterlab
     ```
 
@@ -56,7 +51,7 @@ jupyter labextension install @jku-icg/jupyterlab_nbprovenance
     jupyter lab --watch
     ```
 
-1. Make Code changes
+1. Make code changes
 1. Rebuild the extension with `yarn build` or watch for file changes and built automatically with `yarn watch`  
     JupyterLab updates itself, due to the `--watch` parameter
 1. Refresh the JupyterLab in your browser to load the updated files
