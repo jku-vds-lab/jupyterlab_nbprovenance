@@ -60,6 +60,15 @@ jupyter labextension install @jku-icg/jupyterlab_nbprovenance
 
 Also see the [JuypterLab Extension Developer Guide](https://jupyterlab.readthedocs.io/en/stable/developer/extension_dev.html#extension-authoring).
 
+## Publish
+
+Make sure to `npm login` with the user *icgbot* first.
+
+```sh
+npm pack --dry-run  # verify files
+npm publish
+```
+
 ## Attributions
 
 This extension uses icons by [fontawesome.com](https://fontawesome.com/), available under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
