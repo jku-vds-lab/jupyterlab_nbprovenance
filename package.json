@@ -1,15 +1,18 @@
 {
-  "name": "jupyterlab_nbprovenance",
-  "version": "0.2.0",
-  "description": "JupyterLab Notebook Provenance",
+  "name": "@jku-icg/jupyterlab_nbprovenance",
+  "version": "1.0.0-alpha.1",
+  "description": "JuypterLab extension for provenance tracking in notebooks.",
   "keywords": [
     "jupyter",
+    "notebook",
     "jupyterlab",
-    "jupyterlab extension"
+    "jupyterlab-extension",
+    "provenance",
+    "reproducability"
   ],
-  "homepage": "https://github.com/richardwolfmayr/jupyterlab_nbprovenance/",
+  "homepage": "https://github.com/jku-icg/jupyterlab_nbprovenance/",
   "bugs": {
-    "url": "https://github.com/richardwolfmayr/jupyterlab_nbprovenance/issues"
+    "url": "https://github.com/jku-icg/jupyterlab_nbprovenance/issues"
   },
   "license": "BSD-3-Clause",
   "author": "The Caleydo Team",
@@ -21,12 +24,12 @@
   "types": "lib/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/richardwolfmayr/jupyterlab_nbprovenance.git"
+    "url": "https://github.com/jku-icg/jupyterlab_nbprovenance.git"
   },
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "prepublishOnly": "npm run build",
+    "prepare": "npm run build",
     "extension:install": "jupyter labextension install jupyterlab_nbprovenance",
     "extension:uninstall": "jupyter labextension uninstall  jupyterlab_nbprovenance",
     "extension:enable": "jupyter labextension enable jupyterlab_nbprovenance",
@@ -48,7 +51,7 @@
     "@types/react": "^16.9.38",
     "@types/react-dom": "^16.9.8",
     "@visdesignlab/trrack": "^1.2.0",
-    "@visdesignlab/trrack-vis": "^1.1.0",
+    "@jku-icg/trrack-notebook-vis": "^1.0.0-alpha.2",
     "awesome-typescript-loader": "^5.2.1",
     "circular-json": "^0.5.9",
     "d3": "^5.12.0",
