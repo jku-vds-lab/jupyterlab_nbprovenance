@@ -1,0 +1,15 @@
+name: nbprov-demo
+channels:
+  - defaults
+dependencies:
+  - python
+  - jupyterlab
+  - nodejs[version='>=10']
+  - numpy
+  - pandas
+  - matplotlib
+  - seaborn
+  - vega_datasets
+  - altair
+  - scipy
+  - scikit-learn
