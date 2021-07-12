@@ -4,6 +4,7 @@ import { ICellModel, Cell } from '@jupyterlab/cells';
 import {ApplicationState, NotebookProvenance} from './notebook-provenance';
 import { toArray } from '@lumino/algorithm';
 import {PartialJSONValue} from '@lumino/coreutils';
+import { NotebookUtil } from './notebook-util';
 
 /**
  * A notebook widget extension that adds a button to the toolbar.
@@ -111,7 +112,7 @@ export class NotebookProvenanceTracker {
       let action = this.notebookProvenance.prov.addAction(
         "Cell executed",
         (state: ApplicationState) => {
-          state.model = notebook.model!.toJSON();
+          state.model = NotebookUtil.exportModel(notebook);
           this._prevModel = state.model;
           state.cellValue = notebook.model!.cells.get(notebook.activeCellIndex).value.text; // save the NEW cells value
           state.moveToIndex = notebook.activeCellIndex;
@@ -188,7 +189,7 @@ export class NotebookProvenanceTracker {
               state.moveToIndex = notebook.activeCellIndex;
               state.activeCell = notebook.activeCellIndex;
               if (notebook.model) {
-                state.model = notebook.model.toJSON();
+                state.model = NotebookUtil.exportModel(notebook);
                 this._prevModel = state.model;
                 state.modelWorkaround = Date.now();
               }
@@ -233,7 +234,7 @@ export class NotebookProvenanceTracker {
               state.activeCell = notebook.activeCellIndex;
               state.removeCellIndex = notebook.activeCellIndex;
               if (notebook.model) {
-                state.model = notebook.model.toJSON();
+                state.model = NotebookUtil.exportModel(notebook);
                 this._prevModel = state.model;
                 state.modelWorkaround = Date.now();;
               }
@@ -276,7 +277,7 @@ export class NotebookProvenanceTracker {
               state.moveToIndex = notebook.activeCellIndex;
               state.activeCell = notebook.activeCellIndex;
               if (notebook.model) {
-                state.model = notebook.model.toJSON();
+                state.model = NotebookUtil.exportModel(notebook);
                 this._prevModel = state.model;
                 state.modelWorkaround = Date.now();;
               }
@@ -326,7 +327,7 @@ export class NotebookProvenanceTracker {
               state.moveToIndex = notebook.activeCellIndex;
               state.activeCell = notebook.activeCellIndex;
               if (notebook.model) {
-                state.model = notebook.model.toJSON();
+                state.model = NotebookUtil.exportModel(notebook);
                 this._prevModel = state.model;
                 state.modelWorkaround = Date.now();;
               }
@@ -422,7 +423,7 @@ export class NotebookProvenanceTracker {
           // e.g. when switching activeCell after changing content and then writing content in the new cell this line is needed to preserve the model that would have existed
           // test: add cell, change content, click cell above, change content, execute without creating new cell, then click undo ==> problem
           if (notebook.model) {
-            this._prevModel = notebook.model.toJSON();
+            this._prevModel = NotebookUtil.exportModel(notebook);
             state.modelWorkaround = Date.now();;
           }
           return state;

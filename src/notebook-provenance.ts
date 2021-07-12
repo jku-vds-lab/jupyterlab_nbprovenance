@@ -8,6 +8,7 @@ import {NotebookProvenanceTracker} from './provenance-tracker'
 import {provVisUpdate} from "./side-bar";
 import {PartialJSONValue} from '@lumino/coreutils';
 import {DocumentRegistry} from '@jupyterlab/docregistry';
+import { NotebookUtil } from './notebook-util';
 
 
 /**
@@ -97,7 +98,7 @@ export class NotebookProvenance {
       this.pauseTracking = true;
       if(!this.pauseObserverExecution){
         let state = this.prov.current().getState();
-        this.notebook.model!.fromJSON(state.model);
+        NotebookUtil.importModel(this.notebook, state.model as any[]);
         this._actionFunctions.cellValue(state.activeCell,state.cellValue)
         this._actionFunctions.changeActiveCell(state.activeCell);
         if(state.activeCell != state.moveToIndex){
@@ -155,7 +156,7 @@ export class NotebookProvenance {
     // var x =this._prov.graph()
     // x
     // x.nodes.oneNode.state.model.metadata.provenance.... sometimes there is .provenance ==> this is a problem, I do NOT need to save this, it adds a LOT of data that is absolutely redundant and useless
-    
+    /*
     let graph = this._prov.graph();
     let nodesArray = Object.values(graph.nodes);
 
@@ -169,9 +170,9 @@ export class NotebookProvenance {
           }
         }
       }
-    })
+    })*/
 
-
+    console.log(this._prov.exportProvenanceGraph());
     this.notebook.model!.metadata.set('provenance', this._prov.exportProvenanceGraph());
   }
 
