@@ -11,6 +11,7 @@ describe('Provenance Tree', () => {
         // close all tabs
         cy.get('.lm-MenuBar-itemLabel.p-MenuBar-itemLabel').contains('File').click()
         cy.get('.lm-Menu-itemLabel.p-Menu-itemLabel').contains('Close All Tabs').click()
+        cy.wait(1000)
 
         // open new notebook
         //cy.get('[title="New Launcher"').click()
