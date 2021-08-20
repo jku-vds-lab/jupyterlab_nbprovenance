@@ -25,7 +25,7 @@ export class NotebookProvenanceTracker {
    */
   trackCellContentChanged(cell: ICellModel) {
     cell.contentChanged.connect(cell => {
-      if (this.notebookProvenance.pauseTracking) { return; }
+      if (this.notebookProvenance.pauseTracking || !this.notebookProvenance.notebook.model) { return; }
 
       let index = NotebookUtil.getCellIndex(this.notebookProvenance.notebook, cell);
 

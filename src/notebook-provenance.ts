@@ -1,11 +1,9 @@
 import { INotebookModel, Notebook} from "@jupyterlab/notebook";
-import {ActionFunctions} from "./action-functions";
 import {
   initProvenance,
   Provenance
 } from "@visdesignlab/trrack";
 import {NotebookProvenanceTracker} from "./provenance-tracker";
-import {provVisUpdate} from "./side-bar";
 import {DocumentRegistry} from "@jupyterlab/docregistry";
 import { NotebookUtil } from "./notebook-util";
 
@@ -62,7 +60,6 @@ export enum EventType {
  * Model for a provenance graph.
  */
 export class NotebookProvenance {
-  private _actionFunctions: ActionFunctions;
   private _nbtracker: NotebookProvenanceTracker;
 
   // initialize provenance with the first state
@@ -74,7 +71,7 @@ export class NotebookProvenance {
 
 
   // Why is this context not working like app, notebook, sessionContext?
-  constructor(public readonly notebook: Notebook, private context: DocumentRegistry.IContext<INotebookModel>, private provenanceView: any) {
+  constructor(public readonly notebook: Notebook, private context: DocumentRegistry.IContext<INotebookModel>) {
     this.init();
   }
 
@@ -111,37 +108,30 @@ export class NotebookProvenance {
       }
     }
 
-    this._actionFunctions = new ActionFunctions(this.notebook);
-
     // observer for state.model
     this.prov.addObserver(state => state.model, model => {
-      this.pauseTracking = true;
       if (!this.pauseObserverExecution) {
+        this.pauseTracking = true;
 
         // import the model to the notebook
         NotebookUtil.importModel(this.notebook, model!);
 
         // make sure active cell is correct, import may have changed it
         this.notebook.activeCellIndex = this.prov.getState(this.prov.current).activeCell;
+        this.pauseTracking = false;
 
         // register cell change listeners
         this._nbtracker.registerCellListeners();
       }
-      this.pauseTracking = false;
     });
 
     // observer for state.activeCell
     this.prov.addObserver(state => state.activeCell, activeCell => {
       if (!this.pauseObserverExecution) {
+        this.pauseTracking = true;
         // set active cell in notebook
-        this._actionFunctions.changeActiveCell(activeCell!);
-      }
-    });
-
-    this.prov.addGlobalObserver((graph, changeType) => {
-      // update provVis when current node changes and it is visible
-      if (this.provenanceView.isVisible) {
-        provVisUpdate(this._prov);
+        this.notebook.activeCellIndex = activeCell!;
+        this.pauseTracking = false;
       }
     });
 
@@ -153,11 +143,17 @@ export class NotebookProvenance {
     this._nbtracker = new NotebookProvenanceTracker(this);
   }
 
+  /**
+   * Export the provenance data as JSON and store as metadata in notebook
+   */
   protected saveProvenanceGraph() {
     console.log("Saving provenance graph in notebookfile");
 
-    console.log(this._prov.exportProvenanceGraph()); // DEBUG
-    this.notebook.model!.metadata.set("provenance", this._prov.exportProvenanceGraph());
+    // apply any pending changes before save
+    this.nbtracker.applyCellValueChange();
+
+    // console.log(this._prov.exportProvenanceGraph()); // DEBUG
+    this.notebook.model!.metadata.set("provenance", this.prov.exportProvenanceGraph());
   }
 
   public get nbtracker(): NotebookProvenanceTracker {

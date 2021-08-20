@@ -29,38 +29,25 @@ import {
     // symbolWye
 } from "d3-shape";
 import * as React from "react";
+import * as ReactDOM from "react-dom";
 import {style} from "typestyle";
 
 
 
 let notebookProvenance: NotebookProvenance | null;
-let eventConfig: EventConfig<any>;
+let eventConfig: EventConfig<EventType>;
 
 /**
  * The main view for the notebook provenance.
  */
 export class SideBar extends Widget {
-  constructor(shell: LabShell, nbTracker: INotebookTracker) {
+  constructor(private shell: LabShell, private nbTracker: INotebookTracker) {
     super();
 
     this.addClass("jp-nbprovenance-view");
 
-    nbTracker.widgetAdded.connect((_: INotebookTracker, nbPanel: NotebookPanel) => {
-      // wait until the session with the notebook model is ready
-      nbPanel.sessionContext.ready.then(() => {
-        // update provenance information only for the current widget
-        if (shell.currentWidget instanceof NotebookPanel && nbPanel === shell.currentWidget) {
-          const notebook: Notebook = nbPanel.content;
-          notebookProvenance = (notebookModelCache.has(notebook)) ? notebookModelCache.get(notebook)! : null;
-
-          this.summary.innerText = "Provenance of " + (notebookProvenance!.notebook.parent! as NotebookPanel).context.path;
-          if (notebookProvenance) {
-            eventConfig = createEventConfig(notebookProvenance.prov);
-          }
-          this.update();
-        }
-      });
-    });
+    // setup event config
+    eventConfig = createEventConfig();
 
     let topBar = document.createElement("div");
     this.node.appendChild(topBar);
@@ -80,6 +67,8 @@ export class SideBar extends Widget {
     this.provtree = document.createElement("div");
     this.provtree.id = "ProvDiv";
     this.node.appendChild(this.provtree);
+
+    this.reset();
   }
 
   /**
@@ -98,22 +87,27 @@ export class SideBar extends Widget {
   async onUpdateRequest(msg: Message): Promise<void> {
     console.log("onUpdateRequest");
 
-    if (notebookProvenance) {
-      provVisUpdate(notebookProvenance.prov);
+    // update provenance information only for the current widget
+    if (this.shell.currentWidget instanceof NotebookPanel && this.nbTracker.currentWidget === this.shell.currentWidget) {
+      const notebook: Notebook = this.nbTracker.currentWidget.content;
+      notebookProvenance = (notebookModelCache.has(notebook)) ? notebookModelCache.get(notebook)! : null;
+
+      if (notebookProvenance) {
+        this.summary.innerText = "Provenance of " + (notebookProvenance!.notebook.parent! as NotebookPanel).context.path;
+        provVisUpdate(notebookProvenance.prov);
+      }
+    } else {
+      this.reset();
     }
   }
 
   /**
-   * A message handler invoked on a `'before-show'` message.
-   *
-   * #### Notes
-   * The default implementation of this handler is a no-op.
+   * remove provenace visualization
    */
-  protected onBeforeShow(msg: Message): void {
-    console.log("onBeforeShow");
-    if (notebookProvenance) {
-      provVisUpdate(notebookProvenance.prov);
-    }
+  reset() {
+    this.summary.innerText = "No Provenance Data";
+    notebookProvenance = null;
+    ReactDOM.unmountComponentAtNode(this.provtree);
   }
 }
 
@@ -124,8 +118,6 @@ export class SideBar extends Widget {
 let visCallback = function(newNode: NodeID) {
     if (notebookProvenance) {
       notebookProvenance.prov.goToNode(newNode);
-      // Incase the state doesn't change and the observers aren't called, updating the ProvVis here.
-      provVisUpdate(notebookProvenance.prov);
     }
 };
 
@@ -136,7 +128,6 @@ export function provVisUpdate(prov: Provenance<IApplicationState, EventType, IAp
     eventConfig: eventConfig,
     legend: true,
     filters: true
-    // maxNumberOfCells: notebookProvenance!.notebook.model!.cells.length
   };
 
   ProvVisCreator(
@@ -151,31 +142,7 @@ export function provVisUpdate(prov: Provenance<IApplicationState, EventType, IAp
 }
 
 
-function createEventConfig<E extends string>(prov: Provenance<unknown, string, unknown>): EventConfig<E> {
-  console.log("Create eventConfig");
-
-  // function createRemoveSymbol() {
-  //   // return "m1.00089,11.4262l11.3951,-10.42531l12.10485,11.07455l12.10484,-11.07455l11.39521,10.42531l-12.10485,11.07464l12.10485,11.07464l-11.39521,10.42541l-12.10484,-11.07465l-12.10485,11.07465l-11.3951,-10.42541l12.10474,-11.07464l-12.10474,-11.07464z";
-  //   return "M10.19 7.5L15 12.31L12.31 15L7.5 10.19L2.69 15L0 12.31L4.81 7.5L0 2.69L2.69 0L7.5 4.81L12.31 0L15 2.69L10.19 7.5Z";
-  // }
-  //
-  // function createMoveSymbol(){
-  //
-  //   return "M352.201 425.775l-79.196 79.196c-9.373 9.373-24.568 9.373-33.941 0l-79.196-79.196c-15.119-15.119-4.411-40.971 16.971-40.97h51.162L228 284H127.196v51.162c0 21.382-25.851 32.09-40.971 16.971L7.029 272.937c-9.373-9.373-9.373-24.569 0-33.941L86.225 159.8c15.119-15.119 40.971-4.411 40.971 16.971V228H228V127.196h-51.23c-21.382 0-32.09-25.851-16.971-40.971l79.196-79.196c9.373-9.373 24.568-9.373 33.941 0l79.196 79.196c15.119 15.119 4.411 40.971-16.971 40.971h-51.162V228h100.804v-51.162c0-21.382 25.851-32.09 40.97-16.971l79.196 79.196c9.373 9.373 9.373 24.569 0 33.941L425.773 352.2c-15.119 15.119-40.971 4.411-40.97-16.971V284H284v100.804h51.23c21.382 0 32.09 25.851 16.971 40.971z";
-  // }
-  // let transform = "scale (0.035) translate (-200,-200)";
-
-  // function changeSymbol(current: boolean){
-  //   return <path
-  //     strokeWidth={30}
-  //     className={style({
-  //       fill: current ? 'rgb(33, 133, 208)' : 'white',
-  //       stroke: 'rgb(33, 133, 208)'
-  //     })}
-  //     transform="scale (0.035) translate (-200,-200)"
-  //     d="M0 352a160 160 0 0 0 160 160h64a160 160 0 0 0 160-160V224H0zM176 0h-16A160 160 0 0 0 0 160v32h176zm48 0h-16v192h176v-32A160 160 0 0 0 224 0z"
-  //   />
-  // }
+function createEventConfig(): EventConfig<EventType> {
 
   function changeSymbol(current: boolean) {
     return <path
@@ -258,7 +225,7 @@ function createEventConfig<E extends string>(prov: Provenance<unknown, string, u
     />;
   }
 
-  let conf: EventConfig<E> = {};
+  let conf: EventConfig<EventType> = {};
   for (const j in EventType) {
     conf[j] = {};
   }
