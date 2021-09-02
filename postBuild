@@ -1,1 +1,1 @@
-jupyter labextension install @jku-icg/jupyterlab_nbprovenance
+jupyter labextension install @jku-icg/jupyterlab_nbprovenance  --minimize=False
