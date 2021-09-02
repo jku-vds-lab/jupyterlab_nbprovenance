@@ -342,12 +342,12 @@
     lodash.camelcase "^4.3.0"
     protobufjs "^6.8.6"
 
-"@jku-icg/trrack-notebook-vis@^1.0.0-alpha.2":
-  version "1.0.0-alpha.2"
-  resolved "https://registry.yarnpkg.com/@jku-icg/trrack-notebook-vis/-/trrack-notebook-vis-1.0.0-alpha.2.tgz#b2747e2989d72e12397b916e88f24ecae1bf7188"
-  integrity sha512-vxODbVQB98v2MR+HrxwI2MaqmsMsHcBBqHAPARTY4sxuCUA0ZnszXoJCcPaeUACO84Txchej5Nv8P8hYfxNs0A==
+"@jku-icg/trrack-notebook-vis@^1.0.0-alpha.4":
+  version "1.0.0-alpha.4"
+  resolved "https://registry.yarnpkg.com/@jku-icg/trrack-notebook-vis/-/trrack-notebook-vis-1.0.0-alpha.4.tgz#6ed7da500de80c9e0fcf1443e61c9fe8d58159cb"
+  integrity sha512-Y/B/xkpONyPjCRZL4Lixe8I7rFvJSvkkEU2jP3embwz+4xwdKXiUR1dG5KfCVx9POF8ysb2SHxjOX+UEckwC3A==
   dependencies:
-    "@visdesignlab/trrack" "^1.2.0"
+    "@visdesignlab/trrack" "^2.0.0-alpha.10"
     d3 "^5.15.0"
     mobx "^5.15.4"
     mobx-react "^6.1.7"
@@ -1275,7 +1275,7 @@
   dependencies:
     "@types/node" "*"
 
-"@visdesignlab/trrack@2.0.0-alpha.10":
+"@visdesignlab/trrack@2.0.0-alpha.10", "@visdesignlab/trrack@^2.0.0-alpha.10":
   version "2.0.0-alpha.10"
   resolved "https://registry.yarnpkg.com/@visdesignlab/trrack/-/trrack-2.0.0-alpha.10.tgz#2a716700cece24d12927411d563d5b60d84622b0"
   integrity sha512-X0xp7Fco8dsY98ExjSvRl2sJmdv5zswGFJejghsL3LF8Dn+Yt18uvXI0+uIk6LnPUiSU0thSkSnBiAGp9e4xSw==
@@ -1285,16 +1285,6 @@
     firebase "^7.15.5"
     lz-string "^1.4.4"
     mobx "^6.0.1"
-
-"@visdesignlab/trrack@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@visdesignlab/trrack/-/trrack-1.2.0.tgz#e475883c10e34af03f9d17b7e48eecb92104e82b"
-  integrity sha512-Le08bgAO2+jqcD5ao5X7tfiw8/mWRA7U0oZ8RnQtvYsemgc3g0u0zSMRhIwGCoBX2vfWzCho9Xwc5aPmaZeeog==
-  dependencies:
-    deep-diff "^1.0.2"
-    firebase "^7.15.5"
-    immer "^5.1.0"
-    lz-string "^1.4.4"
 
 "@webassemblyjs/ast@1.9.0":
   version "1.9.0"
@@ -4242,11 +4232,6 @@ iferr@^0.1.5:
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/iferr/-/iferr-0.1.5.tgz#c60eed69e6d8fdb6b3104a1fcbca1c192dc5b501"
   integrity sha1-xg7taebY/bazEEofy8ocGS3FtQE=
-
-immer@^5.1.0:
-  version "5.3.6"
-  resolved "https://registry.yarnpkg.com/immer/-/immer-5.3.6.tgz#51eab8cbbeb13075fe2244250f221598818cac04"
-  integrity sha512-pqWQ6ozVfNOUDjrLfm4Pt7q4Q12cGw2HUZgry4Q5+Myxu9nmHRkWBpI0J4+MK0AxbdFtdMTwEGVl7Vd+vEiK+A==
 
 import-local@^2.0.0:
   version "2.0.0"
