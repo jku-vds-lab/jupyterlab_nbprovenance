@@ -1,60 +1,69 @@
-import {INotebookModel, Notebook} from '@jupyterlab/notebook';
-import {ActionFunctions} from './action-functions';
+import { INotebookModel, Notebook} from "@jupyterlab/notebook";
 import {
   initProvenance,
   Provenance
-} from '@visdesignlab/trrack';
-import {NotebookProvenanceTracker} from './provenance-tracker'
-import {provVisUpdate} from "./side-bar";
-import {PartialJSONValue} from '@lumino/coreutils';
-import {DocumentRegistry} from '@jupyterlab/docregistry';
+} from "@visdesignlab/trrack";
+import {NotebookProvenanceTracker} from "./provenance-tracker";
+import {DocumentRegistry} from "@jupyterlab/docregistry";
+import { NotebookUtil } from "./notebook-util";
 
 
 /**
  * interface representing the state of the application
  */
-export interface ApplicationState {
-  model: PartialJSONValue;
-  modelWorkaround: number; // only counting up could lead to a problem when working on parallel timelines. ==> timestamps
+export interface IApplicationState {
+  model: INBModel;
   activeCell: number;
-  cellValue: string;
-  cellType: string;
-  moveToIndex: number;
-  removeCellIndex?: number;
-};
+}
 
-export interface ApplicationExtra {
+export interface IApplicationExtra {
   changedCellId: number;
   cellPositions?: number[]; // Save the position changes. if 0 at index 0, then cell at 0 stays at 0. If 5 at index 0, then the cell has moved from position 0 to position 5 in this event
-};
+}
+
+/**
+ * interface representing the model of a notebook
+ */
+export interface INBModel {
+  cells: Array<INBCell>;
+}
+
+/**
+ * interface representing a cell of a notebook
+ */
+export interface INBCell {
+  source: string;
+}
 
 /**
  * Initial state
  */
-
-const initialState: ApplicationState = {
-  model: {},
-  activeCell: 0,
-  modelWorkaround: 0,
-  cellValue: "",
-  cellType: "code",
-  moveToIndex: 0,
-  removeCellIndex: 0
+const initialState: IApplicationState = {
+  model: { cells: [] },
+  activeCell: 0
 };
 
-export type EventTypes = "Active cell" | "executeCell" | "addCell" | "removeCell" | "moveCell" | "setCell" | "changeCellValue";
-export const EventTypes = ["Active cell", "executeCell", "addCell", "removeCell", "moveCell", "setCell", "changeCellValue"];
-
+/**
+ * EventType Enum covering all events that can happen in a notebook
+ */
+export enum EventType {
+  activeCell = "activeCell",
+  executeCell = "executeCell",
+  addCell = "addCell",
+  removeCell = "removeCell",
+  moveCell = "moveCell",
+  setCell = "setCell",
+  changeCellValue = "changeCellValue"
+}
 
 /**
  * Model for a provenance graph.
  */
 export class NotebookProvenance {
-  private _actionFunctions: ActionFunctions;
   private _nbtracker: NotebookProvenanceTracker;
 
-  //initialize provenance with the first state
-  private _prov: Provenance<ApplicationState, EventTypes, ApplicationExtra>;
+  // initialize provenance with the first state
+  private _prov: Provenance<IApplicationState, EventType, IApplicationExtra>;
 
   // instad of actionFunctions.pauseTracking just use a field here
   public pauseTracking: boolean = false;
@@ -62,12 +71,20 @@ export class NotebookProvenance {
 
 
   // Why is this context not working like app, notebook, sessionContext?
-  constructor(public readonly notebook: Notebook, private context: DocumentRegistry.IContext<INotebookModel>,private provenanceView: any) {
+  constructor(public readonly notebook: Notebook, private context: DocumentRegistry.IContext<INotebookModel>) {
     this.init();
   }
 
   private init() {
-    this._prov = initProvenance<ApplicationState, EventTypes, ApplicationExtra>(initialState, false);
+
+    // load initial state
+    if (!this.notebook.model!.metadata.has("provenance")) {
+      initialState.model = NotebookUtil.exportModel(this.notebook);
+      initialState.activeCell = this.notebook.activeCellIndex;
+    }
+
+    // initialize trrack provenance tracker
+    this._prov = initProvenance<IApplicationState, EventType, IApplicationExtra>(initialState);
 
     // this._prov = initProvenance<ApplicationState, EventTypes, ApplicationExtra>(initialState, true, true, {
     //   apiKey: "AIzaSyCVqzgH7DhN9roG9gaFqGMqh-zj3vd8tww",
@@ -80,64 +97,41 @@ export class NotebookProvenance {
     //   measurementId: "G-Z6JK4BJ7KB"
     // });
 
-    this.context.saveState.connect(this.saveProvenanceGraph,this);
+    // callback for saving the notebook
+    this.context.saveState.connect(this.saveProvenanceGraph, this);
 
-
-    if (this.notebook.model!.metadata.has('provenance')) {
-      const serGraph = this.notebook.model!.metadata.get('provenance');
+    // load existing provenance graph
+    if (this.notebook.model!.metadata.has("provenance")) {
+      const serGraph = this.notebook.model!.metadata.get("provenance");
       if (serGraph) {
         this._prov.importProvenanceGraph(serGraph.toString());
       }
     }
 
-    this._actionFunctions = new ActionFunctions(this.notebook);
+    // observer for state.model
+    this.prov.addObserver(state => state.model, model => {
+      if (!this.pauseObserverExecution) {
+        this.pauseTracking = true;
 
-    this.prov.addObserver(["modelWorkaround"], () => {
-      
-      this.pauseTracking = true;
-      if(!this.pauseObserverExecution){
-        let state = this.prov.current().getState();
-        this.notebook.model!.fromJSON(state.model);
-        this._actionFunctions.cellValue(state.activeCell,state.cellValue)
-        this._actionFunctions.changeActiveCell(state.activeCell);
-        if(state.activeCell != state.moveToIndex){
-          this._actionFunctions.moveCell(state.activeCell, state.moveToIndex);
-        }else{
-          this._actionFunctions.setCell(state.activeCell, state.cellType);
-        }
+        // import the model to the notebook
+        NotebookUtil.importModel(this.notebook, model!);
 
-        // When the user clicks on a past state and then changes the cell value, the old values have to be known:
-        this._nbtracker._prevActiveCellIndex = state.activeCell;
-        this._nbtracker._prevActiveCellValue = state.cellValue;
-        this._nbtracker._prevModel = state.model;
-        // this._nbtracker._prevValuesLoadedByProvenance = true;
-      }
-      this.pauseTracking = false;
+        // make sure active cell is correct, import may have changed it
+        this.notebook.activeCellIndex = this.prov.getState(this.prov.current).activeCell;
+        this.pauseTracking = false;
 
-      // Only update when it is visible --> performance
-      if(this.provenanceView.isVisible){
-        provVisUpdate(this._prov);
+        // register cell change listeners
+        this._nbtracker.registerCellListeners();
       }
     });
 
-    this.prov.addObserver(["activeCell"], () => {
-      // console.log("activeCell observer called");
-      this.pauseTracking = true;
-      if(!this.pauseObserverExecution){
-        let state = this.prov.current().getState();
-        this._actionFunctions.changeActiveCell(state.activeCell);
-
-        // When the user clicks on a past state and then changes the cell value, the old values have to be known:
-        this._nbtracker._prevActiveCellIndex = state.activeCell;
-        this._nbtracker._prevActiveCellValue = state.cellValue;
-        this._nbtracker._prevModel = state.model;
-        // this._nbtracker._prevValuesLoadedByProvenance = true;
-      }
-      this.pauseTracking = false;
-
-
-      if(this.provenanceView.isVisible){
-        provVisUpdate(this._prov);
+    // observer for state.activeCell
+    this.prov.addObserver(state => state.activeCell, activeCell => {
+      if (!this.pauseObserverExecution) {
+        this.pauseTracking = true;
+        // set active cell in notebook
+        this.notebook.activeCellIndex = activeCell!;
+        this.pauseTracking = false;
       }
     });
 
@@ -149,37 +143,24 @@ export class NotebookProvenance {
     this._nbtracker = new NotebookProvenanceTracker(this);
   }
 
+  /**
+   * Export the provenance data as JSON and store as metadata in notebook
+   */
   protected saveProvenanceGraph() {
     console.log("Saving provenance graph in notebookfile");
 
-    // var x =this._prov.graph()
-    // x
-    // x.nodes.oneNode.state.model.metadata.provenance.... sometimes there is .provenance ==> this is a problem, I do NOT need to save this, it adds a LOT of data that is absolutely redundant and useless
-    
-    let graph = this._prov.graph();
-    let nodesArray = Object.values(graph.nodes);
+    // apply any pending changes before save
+    this.nbtracker.applyCellValueChange();
 
-    nodesArray.forEach(node => {
-      let state = node.getState();
-      if(state){
-        if(state.model){
-          if(state.model.hasOwnProperty("metadata")){
-            //@ts-ignore   only a quickfix for now
-            state.model.metadata.provenance = null;
-          }
-        }
-      }
-    })
-
-
-    this.notebook.model!.metadata.set('provenance', this._prov.exportProvenanceGraph());
+    // console.log(this._prov.exportProvenanceGraph()); // DEBUG
+    this.notebook.model!.metadata.set("provenance", this.prov.exportProvenanceGraph());
   }
 
   public get nbtracker(): NotebookProvenanceTracker {
     return this._nbtracker;
   }
 
-  public get prov(): Provenance<ApplicationState, EventTypes, ApplicationExtra> {
+  public get prov(): Provenance<IApplicationState, EventType, IApplicationExtra> {
     return this._prov;
   }
 }
