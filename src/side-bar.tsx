@@ -3,7 +3,6 @@ import {IApplicationExtra, IApplicationState, EventType, NotebookProvenance} fro
 import { LabShell } from "@jupyterlab/application";
 import { NotebookPanel, Notebook, INotebookTracker } from "@jupyterlab/notebook";
 import { notebookModelCache } from ".";
-import { Widget } from "@lumino/widgets";
 import { Message } from "@lumino/messaging";
 import "../style/side-bar.css";
 import
@@ -29,18 +28,24 @@ import {
     // symbolWye
 } from "d3-shape";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import {style} from "typestyle";
+import { Panel, SplitPanel, StackedPanel } from "@lumino/widgets";
+import { CellView } from "./cell-view";
 
 
 
 let notebookProvenance: NotebookProvenance | null;
 let eventConfig: EventConfig<EventType>;
 
+
 /**
  * The main view for the notebook provenance.
  */
-export class SideBar extends Widget {
+export class SideBar extends StackedPanel {
+  private errorWidget: Panel;
+  private splitPanel: SplitPanel;
+  private cellView: CellView;
+
   constructor(private shell: LabShell, private nbTracker: INotebookTracker) {
     super();
 
@@ -49,24 +54,38 @@ export class SideBar extends Widget {
     // setup event config
     eventConfig = createEventConfig();
 
-    let topBar = document.createElement("div");
-    this.node.appendChild(topBar);
+    // setup error message
+    this.errorWidget = new Panel();
+    this.addWidget(this.errorWidget);
 
-    // Add a summary element to the topBar
-    this.summary = document.createElement("p");
-    this.summary.setAttribute("className", "notebookTitle");
-    topBar.appendChild(this.summary);
+    const error = document.createElement("p");
+    error.innerText = "NO PROVENANCE DATA";
+    error.className = "errorMessage";
+    this.errorWidget.node.appendChild(error);
 
-    // just testing FontAwesome
-    // let image = document.createElement("i");
-    // image.className = "fas fa-arrows-alt";
-    // image.setAttribute("style","color: red")
-    // topBar.appendChild(image);
+    // setup content panel
+    this.splitPanel = new SplitPanel();
+    this.splitPanel.orientation = "vertical";
+    this.addWidget(this.splitPanel);
+
+    // Add cell view
+    this.cellView = new CellView();
+    this.splitPanel.addWidget(this.cellView);
+
+    /*
+    let tbButton = ReactWidget.create(React.createElement(Button, { className: "jp-ToolbarButtonComponent", minimal: true,  }, React.createElement(() => <svg height="24px" width="24px" ><g transform="translate(12, 12)">{eventConfig[EventType.addCell].backboneGlyph}</g></svg>)));
+    addToolbarButtonClass(tbButton);
+    toolBar.addItem("test", tbButton);
+    */
+
+    // Add Panel for provenance
+    let provPanel = new Panel();
+    this.splitPanel.addWidget(provPanel);
 
     // Add the provenance div
     this.provtree = document.createElement("div");
     this.provtree.id = "ProvDiv";
-    this.node.appendChild(this.provtree);
+    provPanel.node.appendChild(this.provtree);
 
     this.reset();
   }
@@ -85,6 +104,7 @@ export class SideBar extends Widget {
    * Handle update requests for the widget.
    */
   async onUpdateRequest(msg: Message): Promise<void> {
+    if (!this.isVisible) { return; }
     console.log("onUpdateRequest");
 
     // update provenance information only for the current widget
@@ -93,7 +113,10 @@ export class SideBar extends Widget {
       notebookProvenance = (notebookModelCache.has(notebook)) ? notebookModelCache.get(notebook)! : null;
 
       if (notebookProvenance) {
-        this.summary.innerText = "Provenance of " + (notebookProvenance!.notebook.parent! as NotebookPanel).context.path;
+        // show content and update cell view and prov tree
+        this.splitPanel.show();
+        this.errorWidget.hide();
+        this.cellView.setup(notebook, notebookProvenance.prov);
         provVisUpdate(notebookProvenance.prov);
       }
     } else {
@@ -105,9 +128,9 @@ export class SideBar extends Widget {
    * remove provenace visualization
    */
   reset() {
-    this.summary.innerText = "No Provenance Data";
     notebookProvenance = null;
-    ReactDOM.unmountComponentAtNode(this.provtree);
+    this.splitPanel.hide();
+    this.errorWidget.show();
   }
 }
 

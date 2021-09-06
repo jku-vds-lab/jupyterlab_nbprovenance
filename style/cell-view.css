@@ -1,0 +1,21 @@
+.np-cellviewtoolbar {
+    justify-content: flex-end;
+}
+
+.np-cellviewlist {
+    height: calc(100% - var(--jp-private-toolbar-height));
+    overflow-y: auto;
+}
+
+.np-cellviewcell {
+    background-color: rgb(33, 133, 208);
+    height: 50px;
+    margin: 10px;
+    border-radius: 10px;
+    max-height: 200px;
+    cursor: pointer;
+}
+
+.np-selectedcell {
+    border: solid lightgray 5px;
+}
