@@ -54,6 +54,7 @@
     "@visdesignlab/trrack": "2.0.0-alpha.10",
     "awesome-typescript-loader": "^5.2.1",
     "circular-json": "^0.5.9",
+    "color": "^3.2.1",
     "d3": "^5.12.0",
     "font-awesome": "^4.7.0",
     "http-server": "^0.12.0",
@@ -71,6 +72,7 @@
     "webpack-dev-server": "^3.8.0"
   },
   "devDependencies": {
+    "@types/color": "^3.0.2",
     "cypress": "8.2.0",
     "tslint": "^6.1.1",
     "typescript": "^3.8.3",

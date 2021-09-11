@@ -116,7 +116,7 @@ export class SideBar extends StackedPanel {
         // show content and update cell view and prov tree
         this.splitPanel.show();
         this.errorWidget.hide();
-        this.cellView.setup(notebook, notebookProvenance.prov);
+        this.cellView.setup(notebookProvenance);
         provVisUpdate(notebookProvenance.prov);
       }
     } else {
