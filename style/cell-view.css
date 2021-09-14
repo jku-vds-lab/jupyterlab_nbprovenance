@@ -10,7 +10,7 @@
 }
 
 .np-cellviewcell {
-    background-color: rgb(33, 133, 208);
+    background-color: rgb(33, 150, 243);
     height: 50px;
     margin: 10px;
     border-radius: 10px;
@@ -21,12 +21,12 @@
     padding-left: 5px;
     text-shadow:0px 1px 0px #283966;
     cursor: pointer;
-    box-shadow: 1px 1px 3px 1px #bbbbbb;
+    box-shadow: 1px 1px 3px 0px #4d4d4d;
     overflow: hidden;
 }
 
 .np-selectedcell {
-    box-shadow: 1px 1px 3px 2px rgb(33, 133, 208);
+    box-shadow: 1px 1px 3px 2px rgb(33, 150, 243);
 }
 
 .np-cellviewcell p {

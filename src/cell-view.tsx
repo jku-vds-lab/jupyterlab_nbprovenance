@@ -99,7 +99,7 @@ export class CellView extends Panel {
 
             // set style
             cell.style.height = this.notebook.widgets[i].node.offsetHeight.toString() + "px";
-            cell.style.background = "linear-gradient(165deg, rgb(33, 133, 208), 70%, " + Color("blue").mix(Color("red"), version / maxVersion).hex() + ")";
+            cell.style.background = "linear-gradient(165deg, rgb(33, 150, 243), 70%, " + Color("blue").mix(Color("red"), version / maxVersion).hex() + ")";
 
             // show version number
             const verText = document.createElement("p");
