@@ -2,6 +2,7 @@ import { Notebook } from "@jupyterlab/notebook";
 import { INBCell, INBModel } from "./notebook-provenance";
 import { ICellModel } from "@jupyterlab/cells";
 import { findIndex } from "@lumino/algorithm";
+import { CellType } from "@jupyterlab/nbformat";
 
 /**
  * Utility functions for Jupyter Notebook
@@ -12,27 +13,44 @@ export class NotebookUtil {
      * Export the cells of a notebook as JSON data
      */
     public static exportModel(notebook: Notebook): INBModel {
-        let model: any = notebook.model!.toJSON();
-        return { cells: model.cells };
+        let model: INBModel = { cells: [] };
+        let cells = notebook.model?.cells;
+        if (cells) {
+            for (let i = 0; i < cells.length; i++) {
+                let cell = this.exportCell(notebook, i);
+                if (cell) { model.cells.push(cell); }
+            }
+        }
+        return model;
     }
 
     /**
      * Export a cell of a notebook as JSON data
      */
-    public static exportCell(notebook: Notebook, index: number): INBCell {
-        return notebook.model!.cells.get(index).toJSON() as INBCell;
+    public static exportCell(notebook: Notebook, index: number): INBCell | null {
+        let cell = notebook.model?.cells.get(index);
+        if (cell) {
+            let exportedCell = cell.toJSON();
+            // add id to cell json data to allow tracking
+            exportedCell.id = cell.id;
+            // an empty execution count is exported as an empty object, which the import function complains about
+            if (typeof exportedCell.execution_count === "object") { exportedCell.execution_count = null; }
+            return exportedCell as INBCell;
+        }
+        return null;
     }
 
     /**
      * Import the cells of a notebook from JSON data
      */
     public static importModel(notebook: Notebook, impModel: INBModel) {
-        // we need the metadata of the notebook and only the cells of the imported model
-        let cmodel: any = notebook.model!.toJSON();
-        cmodel.cells = impModel.cells;
-        // an empty execution count is exported as an empty object, which the import function complains about
-        (cmodel.cells as any[]).forEach(c => { if (typeof c.execution_count === "object") { c.execution_count = null; } });
-        notebook.model!.fromJSON(cmodel);
+        const model = notebook.model;
+        if (model) {
+            model.cells.beginCompoundOperation();
+            model.cells.clear();
+            model.cells.pushAll(impModel.cells.map(cell => model.contentFactory.createCell(cell.cell_type as CellType, { id: cell.id, cell })));
+            model.cells.endCompoundOperation();
+        }
     }
 
     /**

@@ -203,7 +203,7 @@ export class NotebookProvenanceTracker {
    */
   executeCellAction = this.setupAction<[number, Notebook]>(
     (state, index, notebook) => {
-      state.model.cells[index] = NotebookUtil.exportCell(notebook, index);
+      state.model.cells[index] = NotebookUtil.exportCell(notebook, index)!;
       return state;
     },
     EventType.executeCell,
@@ -219,7 +219,8 @@ export class NotebookProvenanceTracker {
    */
   addCellAction = this.setupAction<[number, Notebook]>(
     (state, index, notebook) => {
-      state.model.cells.splice(index, 0, NotebookUtil.exportCell(notebook, index));
+      state.model.cells.splice(index, 0, NotebookUtil.exportCell(notebook, index)!);
+      state.activeCell = index;
       return state;
     },
     EventType.addCell,
@@ -282,7 +283,7 @@ export class NotebookProvenanceTracker {
    */
   setCellAction = this.setupAction<[number, Notebook]>(
     (state, index, notebook) => {
-      state.model.cells[index] = NotebookUtil.exportCell(notebook, index);
+      state.model.cells[index] = NotebookUtil.exportCell(notebook, index)!;
       return state;
     },
     EventType.setCell,

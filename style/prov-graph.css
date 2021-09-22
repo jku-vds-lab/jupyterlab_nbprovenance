@@ -1,0 +1,18 @@
+
+.np-provgraphtoolbar{
+    flex-wrap: wrap-reverse;
+}
+
+.np-provgraphtoolbar .np-toolbarspacer {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.np-filter-disabled path {
+    stroke: gray;
+}
+
+button.np-filterbutton {
+    padding-left: 2px;
+    padding-right: 2px;
+}
