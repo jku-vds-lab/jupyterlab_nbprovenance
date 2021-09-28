@@ -33,7 +33,7 @@ To use the extension in a JupyterLab instance from [Binder](mybinder.org/), add 
     ```sh
     conda create --name notebook_provenance python=3.8.5
     conda activate notebook_provenance
-    conda install jupyterlab
+    conda install jupyterlab">=2, <3"
     ```
 
 1. Clone this repo, `cd` into the folder
