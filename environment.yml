@@ -3,7 +3,7 @@ channels:
   - defaults
 dependencies:
   - python
-  - jupyterlab
+  - jupyterlab[version='=2.3.2']
   - nodejs[version='>=10']
   - numpy
   - pandas
