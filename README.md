@@ -40,8 +40,8 @@ To use the extension in a JupyterLab instance from [Binder](mybinder.org/), add 
 1. Then build the extension
 
     ```sh
-    yarn install
-    yarn build
+    npm install
+    npm run build
     ```
 
 1. Install the extension
@@ -59,7 +59,7 @@ To use the extension in a JupyterLab instance from [Binder](mybinder.org/), add 
     ```
 
 1. Make code changes
-1. Rebuild the extension with `yarn build` or watch for file changes and built automatically with `yarn watch`  
+1. Rebuild the extension with `npm run build` or watch for file changes and built automatically with `npm run watch`  
     JupyterLab updates itself, due to the `--watch` parameter
 1. Refresh the JupyterLab in your browser to load the updated files
 
