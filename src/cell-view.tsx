@@ -1,12 +1,12 @@
-import { Toolbar, ToolbarButton } from "@jupyterlab/apputils";
+import { ReactWidget, Toolbar, ToolbarButton } from "@jupyterlab/apputils";
 import { Panel } from "@lumino/widgets";
 import "../style/cell-view.css";
-import { undoIcon, redoIcon } from "@jupyterlab/ui-components";
+import { undoIcon, redoIcon, HTMLSelect, runIcon } from "@jupyterlab/ui-components";
 import { isChildNode, Provenance, ProvenanceNode } from "@visdesignlab/trrack";
-import { EventType, IApplicationExtra, IApplicationState, NotebookProvenance } from "./notebook-provenance";
+import { EventType, IApplicationExtra, IApplicationState, NotebookProvenance, INBCell } from "./notebook-provenance";
 import { Notebook } from "@jupyterlab/notebook";
-import Color from "color";
-
+import { interpolateReds } from "d3-scale-chromatic";
+import React from "react";
 
 
 export class CellView extends Panel {
@@ -22,6 +22,7 @@ export class CellView extends Panel {
     private prov: Provenance<IApplicationState, EventType, IApplicationExtra>;
 
     private cellVersions: Map<string, Array<string>>;
+    private visProperty = "versions";
 
     constructor() {
         super();
@@ -32,6 +33,18 @@ export class CellView extends Panel {
         let toolbar = new Toolbar();
         toolbar.addClass("np-cellviewtoolbar");
         this.addWidget(toolbar);
+
+        // add highlight property dropdown
+        let visSelect = ReactWidget.create(React.createElement(
+            HTMLSelect,
+            { options: ["versions", "executions"],
+            onChange: (x) => {
+                this.visProperty = x.target.value;
+                this.update();
+            }
+        }));
+        toolbar.addItem("dropdown", visSelect);
+        toolbar.addItem("spacer", Toolbar.createSpacerItem());
 
         // add undo redo buttons
         this.undoButton = new ToolbarButton({
@@ -78,9 +91,21 @@ export class CellView extends Panel {
 
         // build cellVersions map
         this.buildCellVersionsMap();
-        // calculate max version for color gradient, 10 as minimum
-        let maxVersion = 10;
-        this.cellVersions.forEach(v => maxVersion = Math.max(v.length - 1, maxVersion));
+
+        // minimum value is 10
+        let maxValue = 10;
+
+        switch (this.visProperty) {
+            case "version":
+                // calculate max version for color gradient, 10 as minimum
+                this.cellVersions.forEach(v => maxValue = Math.max(v.length - 1, maxValue));
+                break;
+            case "executions":
+                // calculate max execution count
+                this.prov.state.model.cells.forEach(c => maxValue = Math.max(this.countExecutions(c), maxValue));
+                break;
+            default:
+        }
 
         // clear list
         while (this.cellList.node.firstChild) { this.cellList.node.firstChild.remove(); }
@@ -96,19 +121,30 @@ export class CellView extends Panel {
             });
             this.cellList.node.appendChild(cell);
             const version = this.cellVersions.has(c.id) ? this.cellVersions.get(c.id)!.length : 0;
+            const executionCount = this.countExecutions(c);
+            const value = this.visProperty === "versions" ? version : executionCount;
 
             // set style
-            cell.style.height = this.notebook.widgets[i].node.offsetHeight.toString() + "px";
-            cell.style.background = "linear-gradient(165deg, rgb(33, 150, 243), 70%, " + Color("blue").mix(Color("red"), version / maxVersion).hex() + ")";
+            cell.style.background = interpolateReds(value / maxValue);
+            cell.style.color = value / maxValue > 0.5 ? "white" : "black";
 
-            // show version number
+            // show version number and execution count
+            const propDiv = document.createElement("div");
             const verText = document.createElement("p");
             verText.innerText = "v" + version;
-            cell.appendChild(verText);
+            propDiv.appendChild(verText);
+            if (c.cell_type === "code") {
+                propDiv.appendChild(runIcon.element({ className: "np-runicon", width: 20, height: 20 }));
+                const exeText = document.createElement("div");
+                exeText.innerText = executionCount.toString();
+                propDiv.appendChild(exeText);
+            }
+            cell.appendChild(propDiv);
 
             // add cell content
             const content = document.createElement("p");
-            content.innerText = Array.isArray(c.source) ? c.source.join() : c.source;
+            let text = Array.isArray(c.source) ? c.source : c.source.split("\n");
+            content.innerText = text.slice(0, 10).join("\n");  // only take the first 10 lines
             cell.appendChild(content);
 
             // scroll to active cell
@@ -183,6 +219,7 @@ export class CellView extends Panel {
 
     /**
      * Build the cellVersions map
+     * Every regular action counts, so no activeCell events
      */
     private buildCellVersionsMap() {
         this.cellVersions = new Map();
@@ -203,6 +240,20 @@ export class CellView extends Panel {
                 }
             }
             node = isChildNode(node) ? this.prov.graph.nodes[node.parent] : null;
+        }
+    }
+
+    /**
+     * Returns the number of executions of a cell; 0 if not code cell
+     * @param cell Notebook cell
+     * @returns number of executions
+     */
+    private countExecutions(cell: INBCell): number {
+        const versions = this.cellVersions.get(cell.id);
+        if (versions) {
+            return versions.filter(id =>  this.prov.graph.nodes[id].metadata.eventType === EventType.executeCell).length;
+        } else {
+            return 0;
         }
     }
 }
