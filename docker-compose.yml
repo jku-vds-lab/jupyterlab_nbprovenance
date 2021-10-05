@@ -12,7 +12,7 @@ services:
       - build
   build:
     build: .
-    command: yarn watch
+    command: npm run watch
     init: true
     volumes:
        - ".:/jupyterlab_nbprovenance"
