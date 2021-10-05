@@ -1,6 +1,14 @@
+.np-provgraph {
+    display: flex;
+    flex-direction: column;
+}
 
 .np-provgraphtoolbar{
     flex-wrap: wrap-reverse;
+}
+
+.np-provgraphtoolbar .jp-Toolbar-item {
+    height: auto;
 }
 
 .np-provgraphtoolbar .np-toolbarspacer {
