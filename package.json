@@ -10,12 +10,12 @@
     "provenance",
     "reproducability"
   ],
-  "homepage": "https://github.com/jku-icg/jupyterlab_nbprovenance/",
+  "homepage": "https://github.com/jku-vds-lab/jupyterlab_nbprovenance/",
   "bugs": {
-    "url": "https://github.com/jku-icg/jupyterlab_nbprovenance/issues"
+    "url": "https://github.com/jku-vds-lab/jupyterlab_nbprovenance/issues"
   },
-  "license": "BSD-3-Clause",
-  "author": "The Caleydo Team",
+  "license": "MIT",
+  "author": "JKU Visual Data Science Lab",
   "files": [
     "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
     "style/**/*.{css,eot,gif,html,jpg,json,png,svg,woff2,ttf}"
@@ -24,7 +24,7 @@
   "types": "lib/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jku-icg/jupyterlab_nbprovenance.git"
+    "url": "https://github.com/jku-vds-lab/jupyterlab_nbprovenance.git"
   },
   "scripts": {
     "build": "tsc",
