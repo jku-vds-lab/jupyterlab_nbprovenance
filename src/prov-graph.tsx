@@ -1,4 +1,4 @@
-import { IApplicationState, EventType, IApplicationExtra } from "./notebook-provenance";
+import { IApplicationState, EventType, IApplicationExtra, NotebookProvenance } from "./notebook-provenance";
 import { createEventConfig } from "./event-config";
 
 import { EventConfig, ProvVisConfig, ProvVisCreator } from "@jku-icg/trrack-notebook-vis";
@@ -21,6 +21,7 @@ export class ProvGraph extends Panel {
     private redoButton: ToolbarButton;
 
     // data
+    private notebookProvenance: NotebookProvenance;
     private prov: Provenance<IApplicationState, EventType, IApplicationExtra>;
     private eventConfig: EventConfig<EventType>;
     private filterButtons: Map<EventType, Widget>;
@@ -60,14 +61,14 @@ export class ProvGraph extends Panel {
         this.undoButton = new ToolbarButton({
             icon: undoIcon,
             onClick: () => {
-                if (isChildNode(this.prov.current)) { this.prov.undoNonEphemeral(); }
+                if (isChildNode(this.prov.current)) { this.notebookProvenance.undo(); }
             }
         });
 
         this.redoButton = new ToolbarButton({
             icon: redoIcon,
             onClick: () => {
-                if (this.prov.current.children.length > 0) { this.prov.redoNonEphemeral(); }
+                if (this.prov.current.children.length > 0) { this.notebookProvenance.redo(); }
             }
         });
 
@@ -90,21 +91,12 @@ export class ProvGraph extends Panel {
     /**
      * Set provenance properties, then update view
      */
-    public setup(prov: Provenance<IApplicationState, EventType, IApplicationExtra>) {
+    public setup(notebookProvenance: NotebookProvenance) {
         this.filter = new Set<EventType>();
-        this.prov = prov;
+        this.notebookProvenance = notebookProvenance;
+        this.prov = notebookProvenance.prov;
         this.prov.addGlobalObserver(() => this.updateUndoRedo());
         this.update();
-    }
-
-    /**
-     * Create function to pass to the ProvVis library for when a node is selected in the graph.
-     * In this case: jump to clicked node
-     */
-    private visCallback = (newNode: NodeID) => {
-        if (this.prov) {
-            this.prov.goToNode(newNode);
-        }
     }
 
     /**
@@ -123,7 +115,7 @@ export class ProvGraph extends Panel {
         ProvVisCreator(
             this.graph.node,
             this.prov,
-            this.visCallback,
+            (id: NodeID) => this.notebookProvenance.goToNode(id),
             false,
             true,
             this.prov.graph.root,

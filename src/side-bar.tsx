@@ -80,7 +80,7 @@ export class SideBar extends StackedPanel {
         this.splitPanel.show();
         this.errorWidget.hide();
         this.cellView.setup(this.notebookProvenance);
-        this.provGraph.setup(this.notebookProvenance.prov);
+        this.provGraph.setup(this.notebookProvenance);
       }
     } else {
       this.reset();

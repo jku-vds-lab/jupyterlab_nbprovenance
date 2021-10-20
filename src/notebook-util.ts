@@ -47,7 +47,8 @@ export class NotebookUtil {
         const model = notebook.model;
         if (model) {
             model.cells.beginCompoundOperation();
-            model.cells.clear();
+            // model.cells.clear(); works but throws exception because model is undefined; doing it manually to avoid error
+            while (model.cells.length > 0) { model.cells.remove(model.cells.length - 1); }
             model.cells.pushAll(impModel.cells.map(cell => model.contentFactory.createCell(cell.cell_type as CellType, { id: cell.id, cell })));
             model.cells.endCompoundOperation();
         }

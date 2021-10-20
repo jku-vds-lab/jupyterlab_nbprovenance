@@ -1,6 +1,6 @@
 {
   "name": "@jku-icg/jupyterlab_nbprovenance",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-beta.1",
   "description": "JuypterLab extension for provenance tracking in notebooks.",
   "keywords": [
     "jupyter",
@@ -10,12 +10,12 @@
     "provenance",
     "reproducability"
   ],
-  "homepage": "https://github.com/jku-icg/jupyterlab_nbprovenance/",
+  "homepage": "https://github.com/jku-vds-lab/jupyterlab_nbprovenance/",
   "bugs": {
-    "url": "https://github.com/jku-icg/jupyterlab_nbprovenance/issues"
+    "url": "https://github.com/jku-vds-lab/jupyterlab_nbprovenance/issues"
   },
-  "license": "BSD-3-Clause",
-  "author": "The Caleydo Team",
+  "license": "MIT",
+  "author": "JKU Visual Data Science Lab",
   "files": [
     "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
     "style/**/*.{css,eot,gif,html,jpg,json,png,svg,woff2,ttf}"
@@ -24,47 +24,34 @@
   "types": "lib/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jku-icg/jupyterlab_nbprovenance.git"
+    "url": "https://github.com/jku-vds-lab/jupyterlab_nbprovenance.git"
   },
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "prepare": "npm run build",
     "extension:install": "jupyter labextension install jupyterlab_nbprovenance",
     "extension:uninstall": "jupyter labextension uninstall  jupyterlab_nbprovenance",
     "extension:enable": "jupyter labextension enable jupyterlab_nbprovenance",
     "extension:disable": "jupyter labextension disable jupyterlab_nbprovenance"
   },
   "dependencies": {
-    "@jku-icg/trrack-notebook-vis": "^1.0.0-alpha.2",
-    "@jupyterlab/application": "^2.1.0",
-    "@jupyterlab/apputils": "^2.0.2",
-    "@jupyterlab/console": "^2.0.2",
-    "@jupyterlab/coreutils": "^4.0.2",
-    "@jupyterlab/filebrowser": "^2.0.2",
-    "@jupyterlab/mainmenu": "^2.0.2",
-    "@jupyterlab/nbformat": "^2.0.1",
-    "@jupyterlab/notebook": "^2.0.2",
-    "@jupyterlab/rendermime-interfaces": "^2.0.1",
-    "@lumino/widgets": "^1.11.1",
-    "@types/circular-json": "^0.4.0",
+    "@jku-icg/trrack-notebook-vis": "^1.0.0-alpha.5",
+    "@jupyterlab/application": "^3.0.0",
+    "@jupyterlab/apputils": "^3.0.0",
+    "@jupyterlab/notebook": "^3.0.0",
+    "@jupyterlab/ui-components": "^3.0.0",
+    "@lumino/widgets": "^1.23.0",
     "@types/d3": "^5.7.2",
     "@types/d3-scale-chromatic": "^3.0.0",
     "@types/react": "^16.9.38",
     "@types/react-dom": "^16.9.8",
     "@visdesignlab/trrack": "2.0.0-alpha.10",
     "awesome-typescript-loader": "^5.2.1",
-    "circular-json": "^0.5.9",
     "d3": "^5.12.0",
     "font-awesome": "^4.7.0",
-    "http-server": "^0.12.0",
-    "node-sass": "^4.13.1",
-    "react": "16.9.0",
-    "react-anaconda": "^1.0.1",
-    "react-dom": "16.9.0",
-    "react-hot-loader": "^4.12.21",
-    "react-move": "^6.1.0",
-    "semantic-ui-react": "^0.88.2",
+    "sass": "^1.42.1",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
     "ts-loader": "^6.0.4",
     "typestyle": "^2.1.0",
     "webpack": "^4.39.3",

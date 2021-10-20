@@ -23,6 +23,16 @@ To install the extension from the terminal, type:
 jupyter labextension install @jku-icg/jupyterlab_nbprovenance
 ```
 
+### Docker
+Alternatively, this repository also contains a Docker configuration to create a container with Juypter Lab and install the extension.
+
+Simply run:
+```sh
+docker-compose up lab
+```
+
+The environment is based on [jupyter/scipy-notebook](https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html#jupyter-scipy-notebook) and should comes with the most popular Python packges, including altair, pandas, scikit-learn, seaborn, and matplotlib.
+
 ### Binder
 To use the extension in a JupyterLab instance from [Binder](mybinder.org/), add a *postBuild* file with the above command to the root of the repository (see the [demo branch](https://github.com/JKU-ICG/jupyterlab_nbprovenance/tree/demo) for reference).
 
@@ -36,15 +46,15 @@ To use the extension in a JupyterLab instance from [Binder](mybinder.org/), add 
     conda install jupyterlab
     ```
 
-1. Clone this repo, `cd` into the folder
-1. Then build the extension
+2. Clone this repo, `cd` into the folder
+3. Then build the extension
 
     ```sh
-    yarn install
-    yarn build
+    npm install
+    npm run build
     ```
 
-1. Install the extension
+4. Install the extension
 
     ```sh
     jupyter labextension install --minimize=False # install the current directory as an extension
@@ -52,16 +62,16 @@ To use the extension in a JupyterLab instance from [Binder](mybinder.org/), add 
 
     Disabling the minifier is optional, but minimizig the code is not necessary locally and it reduces the build time.
 
-1. Start JuypterLab in watch mode
+5. Start JuypterLab in watch mode
 
     ```sh
     jupyter lab --watch
     ```
 
-1. Make code changes
-1. Rebuild the extension with `yarn build` or watch for file changes and built automatically with `yarn watch`  
+6. Make code changes
+7. Rebuild the extension with `npm run build` or watch for file changes and built automatically with `npm run watch`  
     JupyterLab updates itself, due to the `--watch` parameter
-1. Refresh the JupyterLab in your browser to load the updated files
+8. Refresh the JupyterLab in your browser to load the updated files
 
 Also see the [JuypterLab Extension Developer Guide](https://jupyterlab.readthedocs.io/en/stable/developer/extension_dev.html#extension-authoring).
 

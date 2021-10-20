@@ -2,17 +2,12 @@ version: '2.2'
 services:
   lab:
     build: .
-    command: jupyter lab --port=8889 --watch --ip='*' --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password=''
-    init: true
+    command: jupyter lab --port=8889 --ip='*' --no-browser --allow-root --ServerApp.token='' --ServerApp.password=''
     ports:
      - "8889:8889"
-    volumes:
-      - ".:/jupyterlab_nbprovenance"
-    depends_on:
-      - build
   build:
     build: .
-    command: yarn watch
+    command: npm run watch
     init: true
     volumes:
        - ".:/jupyterlab_nbprovenance"

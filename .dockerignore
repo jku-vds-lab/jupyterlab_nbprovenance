@@ -11,5 +11,4 @@ node_modules/
 *.ipynb
 .cache
 .bash_history
-.yarnrc
 cypress/videos
