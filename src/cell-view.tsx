@@ -51,7 +51,7 @@ export class CellView extends Panel {
             icon: undoIcon,
             onClick: () => {
                 const undoNode = this.getUndoNode();
-                if (undoNode) { this.prov.goToNode(undoNode); }
+                if (undoNode) { this.notebookProvenance.goToNode(undoNode); }
             }
         });
 
@@ -59,7 +59,7 @@ export class CellView extends Panel {
             icon: redoIcon,
             onClick: () => {
                 const redoNode = this.getRedoNode();
-                if (redoNode) { this.prov.goToNode(redoNode); }
+                if (redoNode) { this.notebookProvenance.goToNode(redoNode); }
             }
         });
 
