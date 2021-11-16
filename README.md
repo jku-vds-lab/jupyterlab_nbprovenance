@@ -2,7 +2,7 @@
 
  ![npm (scoped)](https://img.shields.io/npm/v/@jku-icg/jupyterlab_nbprovenance?style=flat)
 
-An extension for JupyterLab (v2+) to track interaction provenance in Jupyter notebooks.  
+An extension for JupyterLab to track interaction provenance in Jupyter notebooks.  
 The provenance information is stored using the provenance tracking library [trrack]((https://github.com/visdesignlab/trrack)).
 
 This extension listens to notebook change events from JupyterLab and stores these changes as a provenance graph with Trrack.
