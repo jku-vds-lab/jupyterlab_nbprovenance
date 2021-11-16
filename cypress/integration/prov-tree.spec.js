@@ -45,7 +45,7 @@ describe('Provenance Tree', () => {
         // delete the current notebook
         cy.get('.jp-DirListing-item.jp-mod-selected.jp-mod-running').rightclick()
         cy.get('[data-command="filebrowser:delete"]').click()
-        cy.focused().click()
+        cy.get('.jp-Dialog-button.jp-mod-accept').click()
     })
 
     // select the type of the active cell
