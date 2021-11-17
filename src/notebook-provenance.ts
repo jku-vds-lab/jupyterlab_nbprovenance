@@ -1,11 +1,13 @@
 import { INotebookModel, Notebook} from "@jupyterlab/notebook";
 import {
   initProvenance,
+  NodeID,
   Provenance
 } from "@visdesignlab/trrack";
 import {NotebookProvenanceTracker} from "./provenance-tracker";
 import {DocumentRegistry} from "@jupyterlab/docregistry";
 import { NotebookUtil } from "./notebook-util";
+import { IBaseCell } from "@jupyterlab/nbformat";
 
 
 /**
@@ -31,8 +33,8 @@ export interface INBModel {
 /**
  * interface representing a cell of a notebook
  */
-export interface INBCell {
-  source: string;
+export interface INBCell extends IBaseCell {
+  id: string;
 }
 
 /**
@@ -100,14 +102,6 @@ export class NotebookProvenance {
     // callback for saving the notebook
     this.context.saveState.connect(this.saveProvenanceGraph, this);
 
-    // load existing provenance graph
-    if (this.notebook.model!.metadata.has("provenance")) {
-      const serGraph = this.notebook.model!.metadata.get("provenance");
-      if (serGraph) {
-        this._prov.importProvenanceGraph(serGraph.toString());
-      }
-    }
-
     // observer for state.model
     this.prov.addObserver(state => state.model, model => {
       if (!this.pauseObserverExecution) {
@@ -117,7 +111,7 @@ export class NotebookProvenance {
         NotebookUtil.importModel(this.notebook, model!);
 
         // make sure active cell is correct, import may have changed it
-        this.notebook.activeCellIndex = this.prov.getState(this.prov.current).activeCell;
+        this.notebook.activeCellIndex = this.prov.state.activeCell;
         this.pauseTracking = false;
 
         // register cell change listeners
@@ -128,10 +122,8 @@ export class NotebookProvenance {
     // observer for state.activeCell
     this.prov.addObserver(state => state.activeCell, activeCell => {
       if (!this.pauseObserverExecution) {
-        this.pauseTracking = true;
-        // set active cell in notebook
-        this.notebook.activeCellIndex = activeCell!;
-        this.pauseTracking = false;
+        // set active cell
+        this.setActiveCellIndex(activeCell!);
       }
     });
 
@@ -141,6 +133,51 @@ export class NotebookProvenance {
     this.prov.done();
 
     this._nbtracker = new NotebookProvenanceTracker(this);
+
+    // load existing provenance graph
+    // this is done after registering observers so the current state is loaded from provenence graph for consistency
+    // because it affects the cellId's and acctiveCell
+    if (this.notebook.model!.metadata.has("provenance")) {
+      const serGraph = this.notebook.model!.metadata.get("provenance");
+      if (serGraph) {
+        this.prov.importProvenanceGraph(serGraph.toString());
+        // save because it would show as dirty otherwise
+        this.context.save();
+      }
+    }
+  }
+
+  /**
+   * jump to clicked node
+   */
+  public goToNode(newNode: NodeID) {
+    if (this.prov) {
+        console.log("goToNode");
+        this._nbtracker.applyCellValueChange();
+        this.prov.goToNode(newNode);
+    }
+  }
+
+  /**
+   * go to last non-ephemeral node
+   */
+  public undo() {
+    if (this.prov) {
+        console.log("undo");
+        this._nbtracker.applyCellValueChange();
+        this.prov.undoNonEphemeral();
+    }
+  }
+
+  /**
+   * go to next non-ephemeral node
+   */
+  public redo() {
+    if (this.prov) {
+        console.log("redo");
+        this._nbtracker.applyCellValueChange();
+        this.prov.redoNonEphemeral();
+    }
   }
 
   /**
@@ -162,5 +199,20 @@ export class NotebookProvenance {
 
   public get prov(): Provenance<IApplicationState, EventType, IApplicationExtra> {
     return this._prov;
+  }
+
+  /**
+   * Set the active cell in the notebook
+   * @param activeCellIndex the index of the cell
+   * @param track should this action be tracked (default: false)
+   */
+  public setActiveCellIndex(activeCellIndex: number, track = false) {
+    if (track) {
+      this.notebook.activeCellIndex = activeCellIndex;
+    } else {
+      this.pauseTracking = true;
+      this.notebook.activeCellIndex = activeCellIndex;
+      this.pauseTracking = false;
+    }
   }
 }

@@ -11,6 +11,10 @@ export class NotebookProvenanceTracker {
   // stores cell value changes
   private cellValueChange: { cellIndex: number, value: string } | null = null;
 
+  private activeCellChangedListener: any;
+
+  private renderCounter = 0;
+
   constructor(private notebookProvenance: NotebookProvenance) {
     // register all listeners
     this.trackActiveCell();
@@ -18,6 +22,31 @@ export class NotebookProvenanceTracker {
     this.trackCellExecution();
 
     this.registerCellListeners();
+
+    this.registerRenderListeners();
+  }
+
+  /**
+   * Register listeners to track the state of rendering of the notebook cells
+   * This is a workaround to "placeholder cells" changing the active cell index
+   */
+  registerRenderListeners() {
+    this.notebookProvenance.notebook.fullyRendered.connect((notebook, fullyRendered) => {
+      if (!fullyRendered) {
+        // if fullyRendered is false stop tracking and increase the counter
+        if (this.renderCounter === 0) { this.stopTrackActiveCell(); }
+        this.renderCounter ++;
+      }
+    });
+    this.notebookProvenance.notebook.placeholderCellRendered.connect((notebook, placeholderCellRendered) => {
+      // if a placeholder cell is rendered decrease the counter
+      this.renderCounter--;
+      if (this.renderCounter === 0) {
+        // if the render counter is zero again -> start tracking again
+        this.notebookProvenance.notebook.activeCellIndex = this.notebookProvenance.prov.state.activeCell;
+        this.trackActiveCell();
+      }
+    });
   }
 
   /**
@@ -65,11 +94,10 @@ export class NotebookProvenanceTracker {
    * Handle a change of the active cell
    */
   trackActiveCell() {
-    const activeCellChangedListener = (notebook: Notebook) => {
+    this.activeCellChangedListener = (notebook: Notebook) => {
       if (this.notebookProvenance.pauseTracking) { return; }
-
       // make sure the cellIndex actually changed
-      // the activeCell is set to activeCellIndex-1 bevor a cell is removed, dont track that
+      // the activeCell is set to activeCellIndex-1 before a cell is removed, dont track that
       if (this.notebookProvenance.prov.state.activeCell === notebook.activeCellIndex
         || notebook.model!.cells.length < this.notebookProvenance.prov.state.model.cells.length) { return; }
 
@@ -79,7 +107,14 @@ export class NotebookProvenanceTracker {
       this.applyAction(this.activeCellAction(notebook.activeCellIndex));
     };
 
-    this.notebookProvenance.notebook.activeCellChanged.connect(activeCellChangedListener);
+    this.notebookProvenance.notebook.activeCellChanged.connect(this.activeCellChangedListener, this);
+  }
+
+  /**
+   * Stop tracking active cell changes
+   */
+  stopTrackActiveCell() {
+    this.notebookProvenance.notebook.activeCellChanged.disconnect(this.activeCellChangedListener, this);
   }
 
   /**
@@ -123,7 +158,8 @@ export class NotebookProvenanceTracker {
         case "move":
           this.applyAction(this.moveCellAction(change.newIndex, change.oldIndex, notebook)); break;
         case "set":
-          this.applyAction(this.setCellAction(change.newIndex, notebook)); break;
+          this.applyAction(this.setCellAction(change.newIndex, notebook));
+          this.trackCellContentChanged(change.newValues[0]); break;
         default:
           return;
       }
@@ -203,7 +239,7 @@ export class NotebookProvenanceTracker {
    */
   executeCellAction = this.setupAction<[number, Notebook]>(
     (state, index, notebook) => {
-      state.model.cells[index] = NotebookUtil.exportCell(notebook, index);
+      state.model.cells[index] = NotebookUtil.exportCell(notebook, index)!;
       return state;
     },
     EventType.executeCell,
@@ -219,7 +255,8 @@ export class NotebookProvenanceTracker {
    */
   addCellAction = this.setupAction<[number, Notebook]>(
     (state, index, notebook) => {
-      state.model.cells.splice(index, 0, NotebookUtil.exportCell(notebook, index));
+      state.model.cells.splice(index, 0, NotebookUtil.exportCell(notebook, index)!);
+      state.activeCell = index;
       return state;
     },
     EventType.addCell,
@@ -282,7 +319,7 @@ export class NotebookProvenanceTracker {
    */
   setCellAction = this.setupAction<[number, Notebook]>(
     (state, index, notebook) => {
-      state.model.cells[index] = NotebookUtil.exportCell(notebook, index);
+      state.model.cells[index] = NotebookUtil.exportCell(notebook, index)!;
       return state;
     },
     EventType.setCell,
