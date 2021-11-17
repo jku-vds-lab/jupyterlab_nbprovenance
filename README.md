@@ -9,7 +9,7 @@ This extension listens to notebook change events from JupyterLab and stores thes
 The [trrack-notebook-vis](https://github.com/JKU-ICG/trrack-notebook-vis) library takes the stored provenance information to visualize the provenacne graph in a sidepanel in JupyterLab.
 From the visualization, users can browse the notebook's history, filter it, and switch between states.
 
-:rocket: Try it out on Binder: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/JKU-ICG/jupyterlab_nbprovenance/demo?urlpath=lab)
+:rocket: Try it out on Binder: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jku-vds-lab/jupyterlab_nbprovenance/HEAD?labpath=%2Flab%2Ftree%2Fbinder%2Fdemo.ipynb)
 
 ![Extension Demonstration](demo.gif)
 
@@ -31,7 +31,7 @@ Simply run:
 docker-compose up lab
 ```
 
-The environment is based on [jupyter/scipy-notebook](https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html#jupyter-scipy-notebook) and should comes with the most popular Python packges, including altair, pandas, scikit-learn, seaborn, and matplotlib.
+The environment is based on [jupyter/scipy-notebook](https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html#jupyter-scipy-notebook) and should come with the most popular Python packges, including altair, pandas, scikit-learn, seaborn, and matplotlib.
 
 ### Binder
 To use the extension in a JupyterLab instance from [Binder](mybinder.org/), add a *postBuild* file with the above command to the root of the repository (see the [demo branch](https://github.com/JKU-ICG/jupyterlab_nbprovenance/tree/demo) for reference).
