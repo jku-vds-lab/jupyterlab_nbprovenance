@@ -6,3 +6,5 @@ node_modules/
 *.ipynb
 .idea/
 yarn.lock
+cypress/videos
+cypress/screenshots
