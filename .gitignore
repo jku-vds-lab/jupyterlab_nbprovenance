@@ -4,6 +4,7 @@ node_modules/
 *.egg-info/
 .ipynb_checkpoints
 *.ipynb
+!binder/*.ipynb
 .idea/
 yarn.lock
 cypress/videos
